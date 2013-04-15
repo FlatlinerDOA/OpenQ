@@ -1,0 +1,1 @@
+{"version":3,"file":"openq-server.js","sources":["openq-server.ts"],"names":["start","OpenQServer","OpenQServer.constructor"],"mappings":"AAAA;IAAA,oCAAoC;IACpC,IAAI,WAAW,GAAG,OAAO,CAAC,SAAS,CAAC,CAAC;IACrC,SAAgB,KAAK,CAAC,IAAY;IAElCA,CAACA;IAFD;AAEC,IAGD;QACIC,SADEA,WAAWA,CACDA,IAAYA;QAExBC,CAACA;QACLD;AAACA,IAADA,CAACA,IAAA,IAAA;;AAAA"}
