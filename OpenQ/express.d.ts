@@ -26,7 +26,6 @@ declare module Express {
         delete (path: string, handler: (request: IRequest, response: IResponse) => void): void;
         delete (path: RegExp, handler: (request: IRequest, response: IResponse) => void): void;
 
-
         routes: {
             get?: IRoute[];
             delete?: IRoute[];
