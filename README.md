@@ -17,14 +17,14 @@ Messages can only posted to another user's inbox with a subscription token issue
 
 An OpenQ server hosts one or more authenticated Users. 
 
-Each user has two endpoints, an **inbox** and an **outbox** for messages. 
+Each user has two endpoints, an **inbox** for receiving messages and an **outbox** for broadcasting messages to the public. 
 
 - The User's inbox can only be read by the owning User.
 - The User's inbox can only be written to by either the authenticated owning User, or external parties that have been issued a Subscription token by the owner.
 - The User's outbox can be read by anyone.
 - The User's outbox can be written to only by the owning User.
 
-When reading an inbox or outbox an OpenQ server MUST guarantee the sequence of messages of the same "type". Messages of different types are not guaranteed to be returned in a consistent sequence.
+When a client is reading an inbox or outbox the OpenQ server MUST guarantee the sequence of messages of the same "type". Messages of different types are not guaranteed to be written or read in a consistent sequence.
 
 ## Messages
 
@@ -107,14 +107,13 @@ HTTP POST: https://server.com/username/inbox
 
 > Note: If the token given does not grant permission to post to that inbox the server may reject the subscription request immediately. If at a later date the token is no longer valid, the subscription MAY be automatically unsubscribed by the server.
 
-
 ### Unsubscribe Message
 Unsubscribe messages inform the receiving server that messages of the specified message types are no longer to be routed to the inbox of the calling server. 
 
 -  The server MUST acknowldege the message with either a HTTP 200 and a **Success** message OR rejected with a HTTP 4xx and a **Failed** message.
 
-
 HTTP POST: https://receivingserver.com/username/inbox
+
 #### Request body:
 <pre>
 { 
@@ -132,7 +131,6 @@ HTTP POST: https://receivingserver.com/username/inbox
 
 #### Response body:
 **Success** OR **Failed** response message
-
 
 ### Request Subscribe Message
 
