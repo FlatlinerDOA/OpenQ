@@ -24,19 +24,19 @@ declare module Express {
 
 
         /* HTTP VERBS */
-        get(path: string, handler: (request: IRequest, response: IResponse) => void ): void;
-        get(path: RegExp, handler: (request: IRequest, response: IResponse) => void): void;
-        put(path: string, handler: (request: IRequest, response: IResponse) => void): void;
-        put(path: RegExp, handler: (request: IRequest, response: IResponse) => void): void;
-        post(path: string, handler: (request: IRequest, response: IResponse) => void): void;
-        post(path: RegExp, handler: (request: IRequest, response: IResponse) => void): void;
-        delete(path: string, handler: (request: IRequest, response: IResponse) => void): void;
-        delete(path: RegExp, handler: (request: IRequest, response: IResponse) => void): void;
-        head(path: string, handler: (request: IRequest, response: IResponse) => void ): void;
-        head(path: RegExp, handler: (request: IRequest, response: IResponse) => void ): void;
+        get(path: string, callback: (request: IRequest, response: IResponse) => void ): void;
+        get (path: RegExp, callback: (request: IRequest, response: IResponse) => void): void;
+        put(path: string, callback: (request: IRequest, response: IResponse) => void): void;
+        put(path: RegExp, callback: (request: IRequest, response: IResponse) => void): void;
+        post(path: string, callback: (request: IRequest, response: IResponse) => void): void;
+        post(path: RegExp, callback: (request: IRequest, response: IResponse) => void): void;
+        delete (path: string, callback: (request: IRequest, response: IResponse) => void): void;
+        delete (path: RegExp, callback: (request: IRequest, response: IResponse) => void): void;
+        head(path: string, callback: (request: IRequest, response: IResponse) => void ): void;
+        head(path: RegExp, callback: (request: IRequest, response: IResponse) => void ): void;
 
-        all(path: string, handler: (request: IRequest, response: IResponse) => void ): void;
-        all(path: RegExp, handler: (request: IRequest, response: IResponse) => void ): void;
+        all(path: string, callback: (request: IRequest, response: IResponse) => void ): void;
+        all(path: RegExp, callback: (request: IRequest, response: IResponse) => void ): void;
 
         locals: any;
 

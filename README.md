@@ -15,7 +15,7 @@ Messages can only posted to another user's inbox with a subscription token issue
 
 ## Endpoints
 
-An SimpleQ server hosts one or more authenticated Users. 
+A SimpleQ server hosts one or more authenticated Users. 
 
 Each user has two endpoints, an **inbox** for receiving messages and an **outbox** for broadcasting messages to the public. 
 
@@ -32,13 +32,14 @@ A message in SimpleQ can have any content you like as long as it adheres to the 
 
 - The message MUST be valid JSON.
 - The first member MUST be a "type" string which MUST NOT be null or empty.
+- The message MAY have a member named "qid" which represents the monotonically incremented number in the queue, if specified this will be verified to be the next number in the queue (if not the enqueue will fail).
 - The entire message MUST be less than [65KiB](http://en.wikipedia.org/wiki/Kibibyte). 
 
 ## Reserved SimpleQ Message Types
 
-### Success message
+### Standard Response
 
-This is a success message that always accompanies a HTTP 200 response from an SimpleQ server.
+This is a success that always accompanies a HTTP 200 response from an SimpleQ server.
 
 ### Response body:
 <pre>
@@ -89,7 +90,7 @@ It is the discretion of the recipient server whether this subscription is allowe
 HTTP POST: https://server.com/username/inbox
 {
   "type":"urn:simpleq/subscribe",
-  "inbox":"https://callingserver.com/username/inbox",
+  "subscriber":"https://callingserver.com/username/inbox",
   "token":"bfsgetwg443td4dgoh43fsldjfdk==",
   "messagetypes":["urn:twitter/tweet", "urn:facebook/statusupdate"],
   "messagesperminute":60,
@@ -100,7 +101,7 @@ HTTP POST: https://server.com/username/inbox
 |Name|Type|Description|
 |:---|:---------|:----------|
 |type|string|URI that identifies this as a subscribe message|
-|inbox|string|The universally addressable url to the inbox that messages are to be forwarded to. This combined with the token, uniquely identifies the subscription|
+|subscriber|string|The universally addressable url to the inbox that messages are to be forwarded to. This uniquely identifies the subscription|
 |token|string|Issued by the subscriber, this token tells the server what token to use when posting a message to the subscriber's inbox|
 |messagetypes|string[]|The list of message types to subscribe to (this is an additive operation, if there are already subscriptions for a given inbox this will add to the pre-existing list of subscribed message types|
 |messagesperminute|number|Specifies the maximum number of messages per minute the subscriber can handle, the server MUST honor this constraint when pushing new messages to the subscribers inbox|
@@ -121,7 +122,8 @@ Unsubscribe messages inform the receiving server that messages of the specified 
 HTTP POST: https://receivingserver.com/username/inbox
 { 
   "type":"urn:simpleq/unsubscribe",
-  "inbox":"https://callingserver.com/username/inbox",
+  "subscriber":"https://callingserver.com/username/inbox",
+  "token":"bfsgetwg443td4dgoh43fsldjfdk==",
   "messagetypes":["urn:twitter/tweet", "urn:facebook/statusupdate"]
 }
 </pre>
@@ -129,15 +131,16 @@ HTTP POST: https://receivingserver.com/username/inbox
 |Name|Type|Description|
 |:---|:---------|:----------|
 |type|string|URI that identifies this as an unsubscribe message|
-|inbox|string|The inbox to unsubscribe|
+|subscriber|string|The inbox to unsubscribe|
 |token|string|The token which must match the previously issued token from the subscriber.|
+|messagetypes|string[]|The list of message types to unsubscribe once no subscribed message types remain the subscription is completely removed|
 
 #### Response:
 **Success** OR **Failed** response message
 
 ### Request Subscribe Message
 
-This message is the only message type that can be posted to a user's inbox without authentication.
+This message is the only message type that can be posted to any user's inbox without authentication.
 It is the equivalent of a "Request permission to send these message types to you" message. Basically asking that the recipient subscribe to the sender's messages of particular types (A "please follow me request" if you will).
 
 * The server MUST only accept one of these messages for any given return inbox and MUST reject all subsequent messages from that peer with an HTTP 4xx until a Subscription for that inbox is setup. 
@@ -150,8 +153,8 @@ It is then at the server's discretion as to whether future Subscribe Requests fr
 HTTP POST: https://server.com/username/inbox
 { 
   "type":"urn:simpleq/requestsubscribe",
-  "inbox":"https://subscribetoserver.com/subscribetousername/inbox",
-  "token":"bfsgetwg443td4dgoh43fsldjfdk==",
+  "subscribeto":"https://subscribetoserver.com/subscribetousername/inbox",
+  "withtoken":"bfsgetwg443td4dgoh43fsldjfdk==",
   "messagetypes":["urn:twitter/tweet", "urn:facebook/statusupdate"],
   "fromfirstmessage":true
 }
@@ -159,7 +162,6 @@ HTTP POST: https://server.com/username/inbox
 
 #### Response:
 **Success** OR **Failed** response message
-
 
 ## All other Message handling
 
@@ -171,11 +173,10 @@ A broadcast message can only be sent by the authenticated user on an SimpleQ ser
 #### Request:
 <pre>
 HTTP POST: https://server.com/username/outbox
-{ 
+[{ 
     "type":"urn:twitter/tweet",
-    "token":"absdfoweighiueghkigwe==",
-    "message":{ tweet:"OMG! SimpleQ rocks!"}
-}
+    "tweet":"OMG! SimpleQ rocks!"
+}]
 </pre>
 
 Response:
@@ -193,30 +194,32 @@ When a message is to be sent to a user.
 #### Request:
 <pre>
 HTTP POST: https://server.com/username/inbox
-{ 
+[{ 
     "type":"urn:twitter/tweet",
     "token":"absdfoweighiueghkigwe==",
     "tweet":"OMG! SimpleQ rocks!"
-}
+}]
 </pre>
 
 ### Polling an outbox for Messages 
 
 #### Request:
 <pre>
-HTTP GET: https://server.com/username/outbox/?take=100&skip=900&type=urn:twitter/tweet
+HTTP GET: https://server.com/username/outbox/?after=100&skip=900&type=urn:twitter/tweet
 </pre>
 
 #### Response:
 <pre>
 { 
   "count": 9000,
-  "from":0,
+  "afterqid":100,
   "messages":[{
       "type":"urn:twitter/tweet",
+      "qid":101,
       "tweet":"Woot! First tweet"
     }, {
       "type":"urn:twitter/tweet",
+      "qid":102,
       "tweet":"Dude! I just twoted all over the place!"
     } 
   ]
@@ -232,9 +235,10 @@ HTTP GET: https://server.com/username/inbox/take=100&skip=0
 auth-token:username:password
 { 
   "count": 9000,
-  "from":0,
+  "afterqid":-1,
   "messages":[{
     "type":"http://www.msnbc.com/rss.xml",
+    "qid":0,
     "summary":"Lol catz speak out about Anonymous"
    }]
 }
@@ -252,11 +256,11 @@ FeedSharkly service periodically refreshes RSS feeds on behalf of a user and del
 When a user (in this case FrankyJ) pushes the subscribe link to an RSS feed in the mobile client, the mobile client app posts a subscribe message to the aggregator service's inbox.
 
 <pre>
-HTTP POST: https://SimpleQ.feedsharkly.com/aggregator/outbox
+HTTP POST: https://q.feedsharkly.com/aggregator/outbox
 { 
   "type":"urn:simpleq/subscribe",
-  "token":"1234",
-  "inbox":"https://SimpleQ.feedsharkly.com/FrankyJ/inbox",
+  "token":"aRieuahfkKTRIhlcdahsfuoeFe==",
+  "subscriber":"https://q.feedsharkly.com/FrankyJ/inbox",
   "messagetypes":["http://www.msnbc.com/rss.xml"]
 }
 </pre>
@@ -264,27 +268,33 @@ HTTP POST: https://SimpleQ.feedsharkly.com/aggregator/outbox
 The service later posts a broadcast message with the RSS content to it's service outbox.
 
 <pre>
-HTTP POST: https://SimpleQ.feedsharkly.com/aggregator/outbox
+HTTP POST: https://q.feedsharkly.com/aggregator/outbox
+auth-token: aRieuahfkKTRIhlcdahsfuoeFe==
 { 
     "type":"http://www.msnbc.com/rss.xml",
     "summary":"Lol catz speak out about Anonymous"
 }
 </pre>
 
-The mobile client can then periodically check it's inbox for news feeds.
+The mobile client can then periodically check it's inbox for the top 10 news feeds.
 
 <pre>
-HTTP GET: https://SimpleQ.feedsharkly.com/FrankyJ/inbox?take=100&skip=0
+HTTP GET: https://q.feedsharkly.com/FrankyJ/inbox?take=1&skip=0
+auth-token:asdfoygaigbeFEGDkGfbaiyfgL==
 </pre>
 
 Response:
 <pre>
 { 
   "count": 9000,
-  "from":0,
   "messages":[{
     "type":"http://www.msnbc.com/rss.xml",
+    "qid":10,
     "summary":"Lol catz speak out about Anonymous"
+   }, {
+    "type":"http://www.theverge.com/rss.xml",
+    "qid":5,
+    "summary":"'Shell shock': How Reddit made a man eat a live turtle."
    }]
 }
 </pre>
