@@ -2,7 +2,6 @@
 
 var express: Express = require("express");
 var app = express();
-var Rx = require('rx');
 
 export function createServer(port: number = null): IOpenQServer {
     port = port || 8000;
@@ -17,5 +16,6 @@ class OpenQServer implements IOpenQServer {
 
     send(inbox: string, message: string) : Rx.IObservable {
         console.log("Sending " + message + " to " + inbox);
+        return null;
     }
 }

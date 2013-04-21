@@ -1,6 +1,5 @@
 var express = require("express");
 var app = express();
-var Rx = require('rx');
 function createServer(port) {
     if (typeof port === "undefined") { port = null; }
     port = port || 8000;
@@ -13,6 +12,7 @@ var OpenQServer = (function () {
     }
     OpenQServer.prototype.send = function (inbox, message) {
         console.log("Sending " + message + " to " + inbox);
+        return null;
     };
     return OpenQServer;
 })();
