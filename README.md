@@ -31,7 +31,7 @@ When a client is reading an inbox or outbox the SimpleQ server MUST guarantee th
 A message in SimpleQ can have any content you like as long as it adheres to the following constraints.
 
 - The message MUST be valid JSON.
-- The FIRST parameter MUST be a "type" string which is neither null or empty.
+- The first member MUST be a "type" string which MUST NOT be null or empty.
 - The entire message MUST be less than [65KiB](http://en.wikipedia.org/wiki/Kibibyte). 
 
 ## Reserved SimpleQ Message Types
@@ -59,8 +59,8 @@ This is a failure message that always accompanies a HTTP 4xx response from an Si
 <pre>
 { 
   "type":"urn:simpleq/failed",
-  "errorcode":"InboxNotFound",
-  "error":"The specified inbox does not exist"
+  "errorcode":"UserNotFound",
+  "error":"The specified user does not exist"
 }
 </pre>
 
@@ -71,6 +71,11 @@ This is a failure message that always accompanies a HTTP 4xx response from an Si
 |error|string|Human readable message describing why the response failed|
 
 
+### Common Error Codes
+
+|Status Code|Error Code|Description|
+|404|UserNotFound|The specified user does not exist|
+
 ### Subscribe Message
 
 Subscribe messages inform the server that messages of the specified types are to be routed to the inbox of the caller's request. 
@@ -79,10 +84,9 @@ It is the discretion of the recipient server whether this subscription is allowe
 * The server MUST post a Verify Token message to the specified inbox url to ensure the token permits posting to the inbox and receives a HTTP 200 and **Success** response message from that server, otherwise the server MUST respond with a **Failed** message and HTTP 400.
 * The server MUST respond with either a HTTP 200 and a **Success** response message OR a HTTP 4xx and a **Failed** response message.
 
-HTTP POST: https://server.com/username/inbox
-
-#### Request body:
+#### Request:
 <pre>
+HTTP POST: https://server.com/username/inbox
 {
   "type":"urn:simpleq/subscribe",
   "inbox":"https://callingserver.com/username/inbox",
@@ -102,7 +106,7 @@ HTTP POST: https://server.com/username/inbox
 |messagesperminute|number|Specifies the maximum number of messages per minute the subscriber can handle, the server MUST honor this constraint when pushing new messages to the subscribers inbox|
 |fromfirstmessage|boolean|A value indicating whether the subscription should start from the oldest message the SimpleQ server has of these types, or should only subscribe to any new messages posted after the subscription is created|
 
-#### Response body:
+#### Response:
 **Success** OR **Failed** response message
 
 > Note: If the token given does not grant permission to post to that inbox the server may reject the subscription request immediately. If at a later date the token is no longer valid, the subscription MAY be automatically unsubscribed by the server.
@@ -112,10 +116,9 @@ Unsubscribe messages inform the receiving server that messages of the specified 
 
 -  The server MUST acknowldege the message with either a HTTP 200 and a **Success** message OR rejected with a HTTP 4xx and a **Failed** message.
 
-HTTP POST: https://receivingserver.com/username/inbox
-
-#### Request body:
+#### Request:
 <pre>
+HTTP POST: https://receivingserver.com/username/inbox
 { 
   "type":"urn:simpleq/unsubscribe",
   "inbox":"https://callingserver.com/username/inbox",
@@ -129,7 +132,7 @@ HTTP POST: https://receivingserver.com/username/inbox
 |inbox|string|The inbox to unsubscribe|
 |token|string|The token which must match the previously issued token from the subscriber.|
 
-#### Response body:
+#### Response:
 **Success** OR **Failed** response message
 
 ### Request Subscribe Message
@@ -142,10 +145,9 @@ It is the equivalent of a "Request permission to send these message types to you
 
 It is then at the server's discretion as to whether future Subscribe Requests from that peer will be accepted or rejected immediately.
 
-HTTP POST: https://server.com/username/inbox
-
-Request body:
+#### Request:
 <pre>
+HTTP POST: https://server.com/username/inbox
 { 
   "type":"urn:simpleq/requestsubscribe",
   "inbox":"https://subscribetoserver.com/subscribetousername/inbox",
@@ -155,7 +157,7 @@ Request body:
 }
 </pre>
 
-Response body:
+#### Response:
 **Success** OR **Failed** response message
 
 
@@ -166,10 +168,9 @@ Response body:
 Any message can be broadcast to all Subscribers by posting to the outbox.
 A broadcast message can only be sent by the authenticated user on an SimpleQ server to their own outbox. All subscribers to this outbox will then receive 1 copy of the message either pushed to their inbox directly, or they can poll for it at a later date (depending on if there is a subscription).
 
-HTTP POST: https://server.com/username/outbox
-
-Request body:
+#### Request:
 <pre>
+HTTP POST: https://server.com/username/outbox
 { 
     "type":"urn:twitter/tweet",
     "token":"absdfoweighiueghkigwe==",
@@ -177,7 +178,7 @@ Request body:
 }
 </pre>
 
-Response body:
+Response:
 **Success** OR **Failed** response message
 
 > Note: The server MUST authenticate the sender is the owner user but MAY do so any number of ways (Basic auth, signature, bearer token etc.)
@@ -189,9 +190,9 @@ When a message is to be sent to a user.
 * The client MUST specify a valid message (see above).
 * The client MUST specify the subscription token they were previously issued by the recipient or be authenticated as the owner of that inbox.
 
-HTTP POST: https://server.com/username/inbox
-#### Request Body:
+#### Request:
 <pre>
+HTTP POST: https://server.com/username/inbox
 { 
     "type":"urn:twitter/tweet",
     "token":"absdfoweighiueghkigwe==",
@@ -201,9 +202,12 @@ HTTP POST: https://server.com/username/inbox
 
 ### Polling an outbox for Messages 
 
+#### Request:
+<pre>
 HTTP GET: https://server.com/username/outbox/?take=100&skip=900&type=urn:twitter/tweet
+</pre>
 
-#### Response Body:
+#### Response:
 <pre>
 { 
   "count": 9000,
@@ -222,10 +226,10 @@ HTTP GET: https://server.com/username/outbox/?take=100&skip=900&type=urn:twitter
 
 ### User polling for Private Inbox Messages 
 
+#### Response:
+<pre>
 HTTP GET: https://server.com/username/inbox/take=100&skip=0
 auth-token:username:password
-Response:
-<pre>
 { 
   "count": 9000,
   "from":0,
@@ -247,8 +251,8 @@ FeedSharkly service periodically refreshes RSS feeds on behalf of a user and del
 
 When a user (in this case FrankyJ) pushes the subscribe link to an RSS feed in the mobile client, the mobile client app posts a subscribe message to the aggregator service's inbox.
 
-HTTP POST: https://SimpleQ.feedsharkly.com/aggregator/outbox
 <pre>
+HTTP POST: https://SimpleQ.feedsharkly.com/aggregator/outbox
 { 
   "type":"urn:simpleq/subscribe",
   "token":"1234",
@@ -259,8 +263,8 @@ HTTP POST: https://SimpleQ.feedsharkly.com/aggregator/outbox
 
 The service later posts a broadcast message with the RSS content to it's service outbox.
 
-HTTP POST: https://SimpleQ.feedsharkly.com/aggregator/outbox
 <pre>
+HTTP POST: https://SimpleQ.feedsharkly.com/aggregator/outbox
 { 
     "type":"http://www.msnbc.com/rss.xml",
     "summary":"Lol catz speak out about Anonymous"
@@ -269,7 +273,9 @@ HTTP POST: https://SimpleQ.feedsharkly.com/aggregator/outbox
 
 The mobile client can then periodically check it's inbox for news feeds.
 
+<pre>
 HTTP GET: https://SimpleQ.feedsharkly.com/FrankyJ/inbox?take=100&skip=0
+</pre>
 
 Response:
 <pre>
