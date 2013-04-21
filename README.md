@@ -1,21 +1,21 @@
-# OpenQ
+# SimpleQ
 
-OpenQ is an attempt at a simple Open Message Queueing system, which standardises on the JSON format and a few basic REST endpoints. 
+SimpleQ is an attempt at a Simple Open Message Queueing system, which standardises on the JSON format and a few basic REST endpoints. 
 
-The OpenQ Server library is a reference implementation written in TypeScript for [NodeJS](http://nodejs.org). 
+The SimpleQ Server library is a reference implementation written in TypeScript for [NodeJS](http://nodejs.org). 
 
 The ultimate goal of this project is to create an extremely simple but flexible standard for messaging, that anyone can use in their applications.
 
 ## Introduction
 
-OpenQ mandates the support of a small list of message types. For a server to be OpenQ compliant it MUST be able to handle all message types outlined below unless otherwise specified.
+SimpleQ mandates the support of a small list of message types. For a server to be SimpleQ compliant it MUST be able to handle all message types outlined below unless otherwise specified.
 
-In OpenQ a username represents a sender and/or recipient in the system. The user may give multiple applications access to their their OpenQ service and how this is authenticated is left open to application developers. In the reference implementation authentication is via HTTP BASIC auth username/password mandated to be over HTTPS.
-Messages can only posted to another user's inbox with a subscription token issued by that User's OpenQ server. Subscriptions can be either set up by the user wanting to receive messages or requested by the sender, but the sender can only send one subscription request.
+In SimpleQ a username represents a sender and/or recipient in the system. The user may give multiple applications access to their their SimpleQ service and how this is authenticated is left open to application developers. In the reference implementation authentication is via HTTP BASIC auth username/password mandated to be over HTTPS.
+Messages can only posted to another user's inbox with a subscription token issued by that User's SimpleQ server. Subscriptions can be either set up by the user wanting to receive messages or requested by the sender, but the sender can only send one subscription request.
 
 ## Endpoints
 
-An OpenQ server hosts one or more authenticated Users. 
+An SimpleQ server hosts one or more authenticated Users. 
 
 Each user has two endpoints, an **inbox** for receiving messages and an **outbox** for broadcasting messages to the public. 
 
@@ -24,26 +24,26 @@ Each user has two endpoints, an **inbox** for receiving messages and an **outbox
 - The User's outbox can be read by anyone.
 - The User's outbox can be written to only by the owning User.
 
-When a client is reading an inbox or outbox the OpenQ server MUST guarantee the sequence of messages of the same "type". Messages of different types are not guaranteed to be written or read in a consistent sequence.
+When a client is reading an inbox or outbox the SimpleQ server MUST guarantee the sequence of messages of the same "type". Messages of different types are not guaranteed to be written or read in a consistent sequence.
 
 ## Messages
 
-A message in OpenQ can have any content you like as long as it adheres to the following constraints.
+A message in SimpleQ can have any content you like as long as it adheres to the following constraints.
 
 - The message MUST be valid JSON.
 - The FIRST parameter MUST be a "type" string which is neither null or empty.
 - The entire message MUST be less than [65KiB](http://en.wikipedia.org/wiki/Kibibyte). 
 
-## Reserved OpenQ Message Types
+## Reserved SimpleQ Message Types
 
 ### Success message
 
-This is a success message that always accompanies a HTTP 200 response from an OpenQ server.
+This is a success message that always accompanies a HTTP 200 response from an SimpleQ server.
 
 ### Response body:
 <pre>
 { 
-  "type":"urn:openq/success"
+  "type":"urn:simpleq/success"
 }
 </pre>
 
@@ -53,12 +53,12 @@ This is a success message that always accompanies a HTTP 200 response from an Op
 
 ### Failed message
 
-This is a failure message that always accompanies a HTTP 4xx response from an OpenQ server.
+This is a failure message that always accompanies a HTTP 4xx response from an SimpleQ server.
 
 ### Response body:
 <pre>
 { 
-  "type":"urn:openq/failed",
+  "type":"urn:simpleq/failed",
   "errorcode":"InboxNotFound",
   "error":"The specified inbox does not exist"
 }
@@ -84,7 +84,7 @@ HTTP POST: https://server.com/username/inbox
 #### Request body:
 <pre>
 {
-  "type":"urn:openq/subscribe",
+  "type":"urn:simpleq/subscribe",
   "inbox":"https://callingserver.com/username/inbox",
   "token":"bfsgetwg443td4dgoh43fsldjfdk==",
   "messagetypes":["urn:twitter/tweet", "urn:facebook/statusupdate"],
@@ -100,7 +100,7 @@ HTTP POST: https://server.com/username/inbox
 |token|string|Issued by the subscriber, this token tells the server what token to use when posting a message to the subscriber's inbox|
 |messagetypes|string[]|The list of message types to subscribe to (this is an additive operation, if there are already subscriptions for a given inbox this will add to the pre-existing list of subscribed message types|
 |messagesperminute|number|Specifies the maximum number of messages per minute the subscriber can handle, the server MUST honor this constraint when pushing new messages to the subscribers inbox|
-|fromfirstmessage|boolean|A value indicating whether the subscription should start from the oldest message the OpenQ server has of these types, or should only subscribe to any new messages posted after the subscription is created|
+|fromfirstmessage|boolean|A value indicating whether the subscription should start from the oldest message the SimpleQ server has of these types, or should only subscribe to any new messages posted after the subscription is created|
 
 #### Response body:
 **Success** OR **Failed** response message
@@ -117,7 +117,7 @@ HTTP POST: https://receivingserver.com/username/inbox
 #### Request body:
 <pre>
 { 
-  "type":"urn:openq/unsubscribe",
+  "type":"urn:simpleq/unsubscribe",
   "inbox":"https://callingserver.com/username/inbox",
   "messagetypes":["urn:twitter/tweet", "urn:facebook/statusupdate"]
 }
@@ -147,7 +147,7 @@ HTTP POST: https://server.com/username/inbox
 Request body:
 <pre>
 { 
-  "type":"urn:openq/requestsubscribe",
+  "type":"urn:simpleq/requestsubscribe",
   "inbox":"https://subscribetoserver.com/subscribetousername/inbox",
   "token":"bfsgetwg443td4dgoh43fsldjfdk==",
   "messagetypes":["urn:twitter/tweet", "urn:facebook/statusupdate"],
@@ -164,7 +164,7 @@ Response body:
 ### Broadcasting a Message to all Subscribers
 
 Any message can be broadcast to all Subscribers by posting to the outbox.
-A broadcast message can only be sent by the authenticated user on an OpenQ server to their own outbox. All subscribers to this outbox will then receive 1 copy of the message either pushed to their inbox directly, or they can poll for it at a later date (depending on if there is a subscription).
+A broadcast message can only be sent by the authenticated user on an SimpleQ server to their own outbox. All subscribers to this outbox will then receive 1 copy of the message either pushed to their inbox directly, or they can poll for it at a later date (depending on if there is a subscription).
 
 HTTP POST: https://server.com/username/outbox
 
@@ -173,7 +173,7 @@ Request body:
 { 
     "type":"urn:twitter/tweet",
     "token":"absdfoweighiueghkigwe==",
-    "message":{ tweet:"OMG! OpenQ rocks!"}
+    "message":{ tweet:"OMG! SimpleQ rocks!"}
 }
 </pre>
 
@@ -195,7 +195,7 @@ HTTP POST: https://server.com/username/inbox
 { 
     "type":"urn:twitter/tweet",
     "token":"absdfoweighiueghkigwe==",
-    "tweet":"OMG! OpenQ rocks!"
+    "tweet":"OMG! SimpleQ rocks!"
 }
 </pre>
 
@@ -247,19 +247,19 @@ FeedSharkly service periodically refreshes RSS feeds on behalf of a user and del
 
 When a user (in this case FrankyJ) pushes the subscribe link to an RSS feed in the mobile client, the mobile client app posts a subscribe message to the aggregator service's inbox.
 
-HTTP POST: https://openq.feedsharkly.com/aggregator/outbox
+HTTP POST: https://SimpleQ.feedsharkly.com/aggregator/outbox
 <pre>
 { 
-  "type":"urn:openq/subscribe",
+  "type":"urn:simpleq/subscribe",
   "token":"1234",
-  "inbox":"https://openq.feedsharkly.com/FrankyJ/inbox",
+  "inbox":"https://SimpleQ.feedsharkly.com/FrankyJ/inbox",
   "messagetypes":["http://www.msnbc.com/rss.xml"]
 }
 </pre>
 
 The service later posts a broadcast message with the RSS content to it's service outbox.
 
-HTTP POST: https://openq.feedsharkly.com/aggregator/outbox
+HTTP POST: https://SimpleQ.feedsharkly.com/aggregator/outbox
 <pre>
 { 
     "type":"http://www.msnbc.com/rss.xml",
@@ -269,7 +269,7 @@ HTTP POST: https://openq.feedsharkly.com/aggregator/outbox
 
 The mobile client can then periodically check it's inbox for news feeds.
 
-HTTP GET: https://openq.feedsharkly.com/FrankyJ/inbox?take=100&skip=0
+HTTP GET: https://SimpleQ.feedsharkly.com/FrankyJ/inbox?take=100&skip=0
 
 Response:
 <pre>
