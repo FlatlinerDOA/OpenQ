@@ -1,4 +1,7 @@
+/// <reference path="types/common.d.ts" />
+// Initialize
 require('typescript-require');
-var Rx = require('rx');
-var openq = require("./openq-server.ts");
+// Get functions.ts
+var openq = require("./openq-express.ts");
 openq.listen();
+//@ sourceMappingURL=app.js.map

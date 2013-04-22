@@ -9,7 +9,7 @@
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <DebugType>full</DebugType>
     <DebugSymbols>true</DebugSymbols>
-    <UseIISExpress>true</UseIISExpress>
+    <UseIISExpress>false</UseIISExpress>
     <IISExpressSSLPort />
     <IISExpressAnonymousAuthentication />
     <IISExpressWindowsAuthentication />
@@ -20,11 +20,14 @@
     <Content Include="app.min.js">
       <DependentUpon>app.ts</DependentUpon>
     </Content>
+    <TypeScriptCompile Include="openq.d.ts" />
+    <Content Include="rx.d.ts" />
     <TypeScriptCompile Include="common.d.ts" />
     <Content Include="default.htm" />
     <Content Include="app.js">
       <DependentUpon>app.ts</DependentUpon>
     </Content>
+    <TypeScriptCompile Include="express.d.ts" />
     <Content Include="openq-server.js">
       <DependentUpon>openq-server.ts</DependentUpon>
     </Content>
@@ -53,17 +56,12 @@
   <PropertyGroup>
     <RootNamespace>OpenQ</RootNamespace>
   </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyName>OpenQ</AssemblyName>
+  </PropertyGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(VSToolsPath)\WebApplications\Microsoft.WebApplication.targets" Condition="'$(VSToolsPath)' != ''" />
-  <ProjectExtensions>
-    <VisualStudio>
-      <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">
-        <WebProjectProperties>
-          <SaveServerSettingsInUserFile>True</SaveServerSettingsInUserFile>
-        </WebProjectProperties>
-      </FlavorProperties>
-    </VisualStudio>
-  </ProjectExtensions>
+  <ProjectExtensions />
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <TypeScriptTarget>ES3</TypeScriptTarget>
     <TypeScriptIncludeComments>true</TypeScriptIncludeComments>
