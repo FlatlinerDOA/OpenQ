@@ -6,6 +6,16 @@ The OpenQ Server library is a reference implementation written in TypeScript for
 
 The ultimate goal of this project is to create an extremely simple but flexible standard for messaging, that anyone can use in their applications.
 
+## Running OpenQ
+
+1. Open a Node command prompt
+2. Run: <pre>node app.js</pre>
+
+## Running the Tests
+1. Open a Node command prompt
+2. Run: <pre>node tests.js</pre>
+
+
 ## Introduction
 
 OpenQ mandates the support of a small list of message types. For a server to be OpenQ compliant it MUST be able to handle all message types outlined below unless otherwise specified.
@@ -298,6 +308,7 @@ Response:
    }]
 }
 </pre>
+
 
 The license for this is MIT.
 
