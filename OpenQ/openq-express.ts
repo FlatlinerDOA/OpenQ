@@ -7,7 +7,7 @@ export var MessageTypes = {
 };
 
 var express: Express = require("express");
-var Server = require("./openq.ts");
+var openq = require("./openq.ts");
 
 export function listen(port: number = null) {
     port = port || 8000;
@@ -16,7 +16,7 @@ export function listen(port: number = null) {
 
 export class OpenQExpressServer {
     private app: Express.IApplication;
-    private server: OpenQ.IServer = new Server();
+    private server: OpenQ.IServer = openq.Server();
 
     constructor(peerId: string, port: number) {
         this.app = express();

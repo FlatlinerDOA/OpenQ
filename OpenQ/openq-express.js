@@ -1,12 +1,10 @@
 define(["require", "exports"], function(require, exports) {
-    /// <reference path="types/common.d.ts" />
-    /// <reference path="./openq.ts" />
     exports.MessageTypes = {
         "success": "urn:simpleq/success",
         "failed": "urn:simpleq/failed"
     };
     var express = require("express");
-    var Server = require("./openq.ts");
+    var openq = require("./openq.ts");
     function listen(port) {
         if (typeof port === "undefined") { port = null; }
         port = port || 8000;
@@ -15,7 +13,7 @@ define(["require", "exports"], function(require, exports) {
     exports.listen = listen;
     var OpenQExpressServer = (function () {
         function OpenQExpressServer(peerId, port) {
-            this.server = new Server();
+            this.server = openq.Server();
             this.app = express();
             this.app.use(express.bodyParser());
             this.app.get('/', this.signupForm);
@@ -73,4 +71,3 @@ define(["require", "exports"], function(require, exports) {
     })();
     exports.OpenQExpressServer = OpenQExpressServer;    
 })
-//@ sourceMappingURL=openq-express.js.map

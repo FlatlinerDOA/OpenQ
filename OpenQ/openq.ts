@@ -1,7 +1,14 @@
 /// <reference path="types/common.d.ts" />
 
+export function startServer(repositoryFactory: (userName:string) => OpenQ.IRepository) {
+    return new Server(repositoryFactory);
+}
+
 export class Server implements OpenQ.IServer {
     private users: User[];
+    constructor(private repositoryFactory: (userName: string) => OpenQ.IRepository) {
+
+    }
 
     createUser(username: string, token?: string, callback?: (err: any, user: OpenQ.IUser) => void ): void {
         if (this.users[username]) {
@@ -37,8 +44,6 @@ export class Server implements OpenQ.IServer {
     }
 }
 
-exports = module.exports = Server;
-
 class User implements OpenQ.IUser {
     inbox = new Inbox();
     outbox = new Outbox();
@@ -55,6 +60,7 @@ class User implements OpenQ.IUser {
 class Inbox implements OpenQ.IInbox {
     send(message: OpenQ.IMessage[], callback?: (err: any) => void ): void {
     }
+
     poll(token: string, afterQid?: number, take?: number, callback?: (err: any, messages: OpenQ.IMessage[]) => void ): void { }
 
     processedTo(qid: number, callback?: (err: any) => void ) { }

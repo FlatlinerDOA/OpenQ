@@ -9,7 +9,7 @@
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <DebugType>full</DebugType>
     <DebugSymbols>true</DebugSymbols>
-    <UseIISExpress>false</UseIISExpress>
+    <UseIISExpress>true</UseIISExpress>
     <IISExpressSSLPort />
     <IISExpressAnonymousAuthentication />
     <IISExpressWindowsAuthentication />
@@ -20,21 +20,58 @@
     <Content Include="app.min.js">
       <DependentUpon>app.ts</DependentUpon>
     </Content>
-    <TypeScriptCompile Include="openq.d.ts" />
-    <Content Include="rx.d.ts" />
-    <TypeScriptCompile Include="common.d.ts" />
+    <TypeScriptCompile Include="openq.ts" />
+    <Content Include="openq-express.js">
+      <DependentUpon>openq-express.ts</DependentUpon>
+    </Content>
+    <Content Include="openq-express.min.js">
+      <DependentUpon>openq-express.ts</DependentUpon>
+    </Content>
+    <Content Include="openq.js">
+      <DependentUpon>openq.ts</DependentUpon>
+    </Content>
+    <Content Include="openq.min.js">
+      <DependentUpon>openq.ts</DependentUpon>
+    </Content>
+    <TypeScriptCompile Include="repository-memory.ts" />
+    <Content Include="repository-memory.js">
+      <DependentUpon>repository-memory.ts</DependentUpon>
+    </Content>
+    <Content Include="repository-memory.min.js">
+      <DependentUpon>repository-memory.ts</DependentUpon>
+    </Content>
+    <Content Include="signup.html" />
+    <TypeScriptCompile Include="spec\repository-memory-spec.ts" />
+    <TypeScriptCompile Include="spec\openq-spec.ts" />
+    <Content Include="spec\openq-spec.js">
+      <DependentUpon>openq-spec.ts</DependentUpon>
+    </Content>
+    <Content Include="spec\openq-spec.min.js">
+      <DependentUpon>openq-spec.ts</DependentUpon>
+    </Content>
+    <Content Include="spec\repository-memory-spec.js">
+      <DependentUpon>repository-memory-spec.ts</DependentUpon>
+    </Content>
+    <Content Include="spec\repository-memory-spec.min.js">
+      <DependentUpon>repository-memory-spec.ts</DependentUpon>
+    </Content>
+    <Content Include="tests.js">
+      <DependentUpon>tests.ts</DependentUpon>
+    </Content>
+    <Content Include="tests.min.js">
+      <DependentUpon>tests.ts</DependentUpon>
+    </Content>
+    <TypeScriptCompile Include="tests.ts" />
+    <TypeScriptCompile Include="types\openq.d.ts" />
+    <Content Include="types\jasmine.d.ts" />
+    <Content Include="types\rx.d.ts" />
+    <TypeScriptCompile Include="types\common.d.ts" />
     <Content Include="default.htm" />
     <Content Include="app.js">
       <DependentUpon>app.ts</DependentUpon>
     </Content>
-    <TypeScriptCompile Include="express.d.ts" />
-    <Content Include="openq-server.js">
-      <DependentUpon>openq-server.ts</DependentUpon>
-    </Content>
-    <Content Include="openq-server.min.js">
-      <DependentUpon>openq-server.ts</DependentUpon>
-    </Content>
-    <TypeScriptCompile Include="openq-server.ts" />
+    <TypeScriptCompile Include="types\express.d.ts" />
+    <TypeScriptCompile Include="openq-express.ts" />
   </ItemGroup>
   <ItemGroup>
     <TypeScriptCompile Include="app.ts" />
@@ -45,8 +82,33 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="openq-server.js.map">
-      <DependentUpon>openq-server.ts</DependentUpon>
+    <Content Include="tests.js.map">
+      <DependentUpon>tests.ts</DependentUpon>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="openq.js.map">
+      <DependentUpon>openq.ts</DependentUpon>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="openq-express.js.map">
+      <DependentUpon>openq-express.ts</DependentUpon>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="repository-memory.js.map">
+      <DependentUpon>repository-memory.ts</DependentUpon>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="spec\repository-memory-spec.js.map">
+      <DependentUpon>repository-memory-spec.ts</DependentUpon>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="spec\openq-spec.js.map">
+      <DependentUpon>openq-spec.ts</DependentUpon>
     </Content>
   </ItemGroup>
   <PropertyGroup>
@@ -61,7 +123,15 @@
   </PropertyGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(VSToolsPath)\WebApplications\Microsoft.WebApplication.targets" Condition="'$(VSToolsPath)' != ''" />
-  <ProjectExtensions />
+  <ProjectExtensions>
+    <VisualStudio>
+      <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">
+        <WebProjectProperties>
+          <SaveServerSettingsInUserFile>True</SaveServerSettingsInUserFile>
+        </WebProjectProperties>
+      </FlavorProperties>
+    </VisualStudio>
+  </ProjectExtensions>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <TypeScriptTarget>ES3</TypeScriptTarget>
     <TypeScriptIncludeComments>true</TypeScriptIncludeComments>

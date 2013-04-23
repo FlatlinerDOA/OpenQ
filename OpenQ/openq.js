@@ -1,7 +1,12 @@
 define(["require", "exports"], function(require, exports) {
-    /// <reference path="types/common.d.ts" />
+    function startServer(repositoryFactory) {
+        return new Server(repositoryFactory);
+    }
+    exports.startServer = startServer;
     var Server = (function () {
-        function Server() { }
+        function Server(repositoryFactory) {
+            this.repositoryFactory = repositoryFactory;
+        }
         Server.prototype.createUser = function (username, token, callback) {
             if(this.users[username]) {
                 if(callback) {
@@ -31,7 +36,6 @@ define(["require", "exports"], function(require, exports) {
         return Server;
     })();
     exports.Server = Server;    
-    exports = module.exports = Server;
     var User = (function () {
         function User(username, token) {
             this.username = username;
@@ -69,4 +73,3 @@ define(["require", "exports"], function(require, exports) {
         return Outbox;
     })();    
 })
-//@ sourceMappingURL=openq.js.map
