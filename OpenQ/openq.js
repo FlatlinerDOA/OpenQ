@@ -14,6 +14,7 @@ var Server = (function () {
     Server.prototype.start = function (callback) {
         this.usersTable = this.repositoryFactory('urn:openq');
         this.usersTable.read('urn:openq/users', exports.Qid.Last, 1, function () {
+            callback(null);
         });
     };
     Server.prototype.createUser = function (username, token, callback) {

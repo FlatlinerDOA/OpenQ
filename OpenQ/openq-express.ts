@@ -27,7 +27,7 @@ export class OpenQExpressServer {
 
         this.app.get('/:username/inbox', this.getMessages);
         this.app.post('/:username/inbox', this.sendMessage);
-
+        console.log('OpenQ server listening on http://localhost:' + port + '/')
         this.app.listen(port);
     }
 

@@ -10,14 +10,14 @@ export class Server implements OpenQ.IServer {
     private users: User[];
     private usersTable: OpenQ.IRepository;
 
-
     constructor(private repositoryFactory: OpenQ.IRepositoryFactory) {
     }
 
     start(callback: (err: any) => void ): void {
         this.usersTable = this.repositoryFactory('urn:openq');
         this.usersTable.read('urn:openq/users', Qid.Last, 1, () => {
-
+            // TODO: Load out user accounts from the users repository
+            callback(null);
         });
     }
 
