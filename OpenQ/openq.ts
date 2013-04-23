@@ -1,13 +1,24 @@
 /// <reference path="types/common.d.ts" />
 
-export function startServer(repositoryFactory: (userName:string) => OpenQ.IRepository) {
+export function createServer(repositoryFactory: OpenQ.IRepositoryFactory) {
     return new Server(repositoryFactory);
 }
 
+export var Qid = { Last: 1024 ^ 4, First: 0, Any: -1 }
+
 export class Server implements OpenQ.IServer {
     private users: User[];
-    constructor(private repositoryFactory: (userName: string) => OpenQ.IRepository) {
+    private usersTable: OpenQ.IRepository;
 
+
+    constructor(private repositoryFactory: OpenQ.IRepositoryFactory) {
+    }
+
+    start(callback: (err: any) => void ): void {
+        this.usersTable = this.repositoryFactory('urn:openq');
+        this.usersTable.read('urn:openq/users', Qid.Last, 1, () => {
+
+        });
     }
 
     createUser(username: string, token?: string, callback?: (err: any, user: OpenQ.IUser) => void ): void {
@@ -53,23 +64,33 @@ class User implements OpenQ.IUser {
     }
 
     requestSubscribe(message: OpenQ.IRequestSubscribeMessage, callback?: (err: any) => void ): void {
-
+        callback(Error('not implemented'));
     }
 }
 
 class Inbox implements OpenQ.IInbox {
     send(message: OpenQ.IMessage[], callback?: (err: any) => void ): void {
+        callback(Error('not implemented'));
     }
 
-    poll(token: string, afterQid?: number, take?: number, callback?: (err: any, messages: OpenQ.IMessage[]) => void ): void { }
+    poll(token: string, afterQid?: number, take?: number, callback?: (err: any, messages: OpenQ.IMessage[]) => void ): void {
+        callback(Error('not implemented'), null);
+    }
 
-    processedTo(qid: number, callback?: (err: any) => void ) { }
+    processedTo(qid: number, callback?: (err: any) => void ) {
+        callback(Error('not implemented'));
+    }
 }
 
 class Outbox implements OpenQ.IOutbox {
-    subscribe(message: OpenQ.ISubscribeMessage, callback?: (err: any) => void ): void { }
-    unsubscribe(message: OpenQ.IUnsubscribeMessage, callback?: (err: any) => void ) { }
-    broadcast(message: OpenQ.IMessage[], callback?: (err: any) => void ): void { }
-    poll(afterQid?: number, take?: number, callback?: (err: any, messages: OpenQ.IMessage[]) => void ): void { }
-    processedTo(subscriber: string, token: string, qid: number, callback?: (err: any) => void ) { }
+    subscribe(message: OpenQ.ISubscribeMessage, callback?: (err: any) => void ): void {
+    }
+    unsubscribe(message: OpenQ.IUnsubscribeMessage, callback?: (err: any) => void ) {
+    }
+    broadcast(message: OpenQ.IMessage[], callback?: (err: any) => void ): void {
+    }
+    poll(afterQid?: number, take?: number, callback?: (err: any, messages: OpenQ.IMessage[]) => void ): void {
+    }
+    processedTo(subscriber: string, token: string, qid: number, callback?: (err: any) => void ) {
+    }
 }

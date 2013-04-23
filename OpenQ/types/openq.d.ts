@@ -2,6 +2,7 @@ module OpenQ {
     export function createServer(factory: (userName: string) => OpenQ.IRepository): IServer;
 
     export interface IServer {
+        start(callback: (err: any) => void ): void;
         createUser(username: string, token: string, callback?: (err:any, user: IUser) => void ): void;
         getUser(username: string, token: string, callback: (err: any, user: IUser) => void ): void;
         deleteUser(username: string, token: string, callback?: (err: any) => void ): void;
@@ -29,8 +30,6 @@ module OpenQ {
         poll(afterQid?: number, take?: number, callback?: (err: any, messages: IMessage[]) => void ): void;
         processedTo(subscriber: string, token: string, qid: number, callback?: (err: any) => void );
     }
-
-
 
     export interface IMessage {
         type: string;
@@ -64,9 +63,13 @@ module OpenQ {
         fromfirstmessage: bool;
     }
 
+    export interface IRepositoryFactory {
+        (tableName: string): OpenQ.IRepository;
+    }
+
     export interface IRepository {
         tableName: string;
-        read: (type: string, version: number, take:number, callback: (results: IMessage[]) => void) => void;
-        write: (messages:IMessage[], expectedVersion: number, callback: (err: any) => void) => void;
+        read: (type: string, afterQid: number, take:number, callback: (results: IMessage[]) => void) => void;
+        write: (messages:IMessage[], expectedQid: number, callback: (err: any) => void) => void;
     }
 }
