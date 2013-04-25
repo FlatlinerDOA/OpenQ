@@ -88,11 +88,16 @@ describe('When creating a new memory repo, ', () => {
         });
 
         describe('When writing a second message with an expected version of -1 (any), ', () => {
-            var readMessages: OpenQ.IMessage[];
             var error = null;
 
             repo.write([{ type: 'urn:test', messageNumber: 2 }], -1, (err) => {
                 error = err;
+            });
+
+            var readMessages: OpenQ.IMessage[];
+
+            repo.read('urn:test', 0, 1, results => {
+                readMessages = results;
             });
 
             it('then no error is thrown', () => {
@@ -112,9 +117,9 @@ describe('When creating a new memory repo, ', () => {
                 error = err;
             });
 
-            it('then an error is thrown with \'ExpectedQidViolation\' code', () => {
-                expect(error).toBeNull();
-                expect(error.errorCode).toBe('ExpectedQidViolation');
+            it('then an error is thrown named \'ExpectedQidViolation\'', () => {
+                expect(error).not.toBeNull();
+                expect(error.name).toBe('ExpectedQidViolation');
             });
 
             it('then the second message is not written', () => {

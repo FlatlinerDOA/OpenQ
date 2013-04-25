@@ -68,7 +68,6 @@ describe('When creating a new memory repo, ', function () {
             });
         });
         describe('When writing a second message with an expected version of -1 (any), ', function () {
-            var readMessages;
             var error = null;
             repo.write([
                 {
@@ -77,6 +76,10 @@ describe('When creating a new memory repo, ', function () {
                 }
             ], -1, function (err) {
                 error = err;
+            });
+            var readMessages;
+            repo.read('urn:test', 0, 1, function (results) {
+                readMessages = results;
             });
             it('then no error is thrown', function () {
                 expect(error).toBeNull();
@@ -96,9 +99,9 @@ describe('When creating a new memory repo, ', function () {
             ], 0, function (err) {
                 error = err;
             });
-            it('then an error is thrown with \'ExpectedQidViolation\' code', function () {
-                expect(error).toBeNull();
-                expect(error.errorCode).toBe('ExpectedQidViolation');
+            it('then an error is thrown named \'ExpectedQidViolation\'', function () {
+                expect(error).not.toBeNull();
+                expect(error.name).toBe('ExpectedQidViolation');
             });
             it('then the second message is not written', function () {
                 var readMessages;
