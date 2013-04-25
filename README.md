@@ -215,7 +215,7 @@ HTTP POST: https://server.com/username/inbox
 
 #### Request:
 <pre>
-HTTP GET: https://server.com/username/outbox/?after=100&skip=900&type=urn:twitter/tweet
+HTTP GET: https://server.com/username/outbox/?afterqid=100&skip=900&type=urn:twitter/tweet
 </pre>
 
 #### Response:
