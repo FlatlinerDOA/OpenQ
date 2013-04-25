@@ -17,8 +17,9 @@ class MemoryRepository implements OpenQ.IRepository {
     constructor(public tableName: string) {
     }
 
-    read(type: string, fromQid: number, take: number, callback: (results: OpenQ.IMessage[]) => void ) {
+    read(type: string, afterQid: number, take: number, callback: (results: OpenQ.IMessage[]) => void ) {
         var q: IQueue = this.getOrCreateQueue(type, false);
+        var fromQid = afterQid + 1;
         var finalTake = Math.min(q.messages.length - fromQid, fromQid + take);
 
         var m = q.messages.slice(fromQid, finalTake);
@@ -52,7 +53,6 @@ class MemoryRepository implements OpenQ.IRepository {
 
         callback(null);
     }
-
    
     getOrCreateQueue(type: string, save: bool): IQueue {
         var q: IQueue = this.typeQueues[type];

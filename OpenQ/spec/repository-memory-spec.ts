@@ -27,13 +27,13 @@ describe('When creating a new memory repo, ', () => {
         });
     })
 
-    describe('When writing a new message with expected qid of -1, ', () => {
+    describe('When writing a new message with expected qid of -1 (any), ', () => {
         var newMessage: OpenQ.IMessage = {
             type: 'urn:test'
         }
 
         var error;
-        repo.write([newMessage], 0, err => {
+        repo.write([newMessage], -1, err => {
             error = err;
         })
 
@@ -42,7 +42,7 @@ describe('When creating a new memory repo, ', () => {
         describe('When reading the first message of the correct type, ', () => {
             var readMessages: OpenQ.IMessage[];
 
-            repo.read('urn:test', 0, 1, results => {
+            repo.read('urn:test', -1, 1, results => {
                 readMessages = results;
             });
 
@@ -64,7 +64,7 @@ describe('When creating a new memory repo, ', () => {
         describe('When reading the second message of the correct type, ', () => {
             var readMessages: OpenQ.IMessage[];
 
-            repo.read('urn:test', 1, 1, results => {
+            repo.read('urn:test', 0, 1, results => {
                 readMessages = results;
             });
 
@@ -77,11 +77,53 @@ describe('When creating a new memory repo, ', () => {
         describe('When reading the first message of a different type, ', () => {
             var readMessages: OpenQ.IMessage[];
 
-            repo.read('urn:test2', 0, 1, results => {
+            repo.read('urn:test2', -1, 1, results => {
                 readMessages = results;
             });
 
             it('then zero messages are read', () => {
+                expect(readMessages).not.toBeNull();
+                expect(readMessages.length).toBe(0);
+            });
+        });
+
+        describe('When writing a second message with an expected version of -1 (any), ', () => {
+            var readMessages: OpenQ.IMessage[];
+            var error = null;
+
+            repo.write([{ type: 'urn:test', messageNumber: 2 }], -1, (err) => {
+                error = err;
+            });
+
+            it('then no error is thrown', () => {
+                expect(error).toBeNull();
+            });
+
+            it('then the second message is written', () => {
+                expect(readMessages).not.toBeNull();
+                expect(readMessages.length).toBe(0);
+            });
+        });
+
+        describe('When writing a second message with an expected version of 0, ', () => {
+            var error = null;
+
+            repo.write([{ type: 'urn:test', messageNumber: 2 }], 0, (err) => {
+                error = err;
+            });
+
+            it('then an error is thrown with \'ExpectedQidViolation\' code', () => {
+                expect(error).toBeNull();
+                expect(error.errorCode).toBe('ExpectedQidViolation');
+            });
+
+            it('then the second message is not written', () => {
+                var readMessages: OpenQ.IMessage[];
+
+                repo.read('urn:test', 0, 1, results => {
+                    readMessages = results;
+                });
+
                 expect(readMessages).not.toBeNull();
                 expect(readMessages.length).toBe(0);
             });

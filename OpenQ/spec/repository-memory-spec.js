@@ -17,14 +17,14 @@ describe('When creating a new memory repo, ', function () {
             expect(messages.length).toBe(0);
         });
     });
-    describe('When writing a new message with expected qid of -1, ', function () {
+    describe('When writing a new message with expected qid of -1 (any), ', function () {
         var newMessage = {
             type: 'urn:test'
         };
         var error;
         repo.write([
             newMessage
-        ], 0, function (err) {
+        ], -1, function (err) {
             error = err;
         });
         it('then no error is raised', function () {
@@ -32,7 +32,7 @@ describe('When creating a new memory repo, ', function () {
         });
         describe('When reading the first message of the correct type, ', function () {
             var readMessages;
-            repo.read('urn:test', 0, 1, function (results) {
+            repo.read('urn:test', -1, 1, function (results) {
                 readMessages = results;
             });
             it('then one message is read', function () {
@@ -49,7 +49,7 @@ describe('When creating a new memory repo, ', function () {
         });
         describe('When reading the second message of the correct type, ', function () {
             var readMessages;
-            repo.read('urn:test', 1, 1, function (results) {
+            repo.read('urn:test', 0, 1, function (results) {
                 readMessages = results;
             });
             it('then zero messages are read', function () {
@@ -59,10 +59,52 @@ describe('When creating a new memory repo, ', function () {
         });
         describe('When reading the first message of a different type, ', function () {
             var readMessages;
-            repo.read('urn:test2', 0, 1, function (results) {
+            repo.read('urn:test2', -1, 1, function (results) {
                 readMessages = results;
             });
             it('then zero messages are read', function () {
+                expect(readMessages).not.toBeNull();
+                expect(readMessages.length).toBe(0);
+            });
+        });
+        describe('When writing a second message with an expected version of -1 (any), ', function () {
+            var readMessages;
+            var error = null;
+            repo.write([
+                {
+                    type: 'urn:test',
+                    messageNumber: 2
+                }
+            ], -1, function (err) {
+                error = err;
+            });
+            it('then no error is thrown', function () {
+                expect(error).toBeNull();
+            });
+            it('then the second message is written', function () {
+                expect(readMessages).not.toBeNull();
+                expect(readMessages.length).toBe(0);
+            });
+        });
+        describe('When writing a second message with an expected version of 0, ', function () {
+            var error = null;
+            repo.write([
+                {
+                    type: 'urn:test',
+                    messageNumber: 2
+                }
+            ], 0, function (err) {
+                error = err;
+            });
+            it('then an error is thrown with \'ExpectedQidViolation\' code', function () {
+                expect(error).toBeNull();
+                expect(error.errorCode).toBe('ExpectedQidViolation');
+            });
+            it('then the second message is not written', function () {
+                var readMessages;
+                repo.read('urn:test', 0, 1, function (results) {
+                    readMessages = results;
+                });
                 expect(readMessages).not.toBeNull();
                 expect(readMessages.length).toBe(0);
             });

@@ -17,27 +17,15 @@
   </PropertyGroup>
   <ItemGroup>
     <Content Include="app.css" />
-    <Content Include="app.min.js">
-      <DependentUpon>app.ts</DependentUpon>
-    </Content>
     <TypeScriptCompile Include="openq.ts" />
     <Content Include="openq-express.js">
-      <DependentUpon>openq-express.ts</DependentUpon>
-    </Content>
-    <Content Include="openq-express.min.js">
       <DependentUpon>openq-express.ts</DependentUpon>
     </Content>
     <Content Include="openq.js">
       <DependentUpon>openq.ts</DependentUpon>
     </Content>
-    <Content Include="openq.min.js">
-      <DependentUpon>openq.ts</DependentUpon>
-    </Content>
     <TypeScriptCompile Include="repository-memory.ts" />
     <Content Include="repository-memory.js">
-      <DependentUpon>repository-memory.ts</DependentUpon>
-    </Content>
-    <Content Include="repository-memory.min.js">
       <DependentUpon>repository-memory.ts</DependentUpon>
     </Content>
     <Content Include="signup.html" />
@@ -46,19 +34,10 @@
     <Content Include="spec\openq-spec.js">
       <DependentUpon>openq-spec.ts</DependentUpon>
     </Content>
-    <Content Include="spec\openq-spec.min.js">
-      <DependentUpon>openq-spec.ts</DependentUpon>
-    </Content>
     <Content Include="spec\repository-memory-spec.js">
       <DependentUpon>repository-memory-spec.ts</DependentUpon>
     </Content>
-    <Content Include="spec\repository-memory-spec.min.js">
-      <DependentUpon>repository-memory-spec.ts</DependentUpon>
-    </Content>
     <Content Include="tests.js">
-      <DependentUpon>tests.ts</DependentUpon>
-    </Content>
-    <Content Include="tests.min.js">
       <DependentUpon>tests.ts</DependentUpon>
     </Content>
     <TypeScriptCompile Include="tests.ts" />
@@ -75,41 +54,6 @@
   </ItemGroup>
   <ItemGroup>
     <TypeScriptCompile Include="app.ts" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="app.js.map">
-      <DependentUpon>app.ts</DependentUpon>
-    </Content>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="tests.js.map">
-      <DependentUpon>tests.ts</DependentUpon>
-    </Content>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="openq.js.map">
-      <DependentUpon>openq.ts</DependentUpon>
-    </Content>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="openq-express.js.map">
-      <DependentUpon>openq-express.ts</DependentUpon>
-    </Content>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="repository-memory.js.map">
-      <DependentUpon>repository-memory.ts</DependentUpon>
-    </Content>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="spec\repository-memory-spec.js.map">
-      <DependentUpon>repository-memory-spec.ts</DependentUpon>
-    </Content>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="spec\openq-spec.js.map">
-      <DependentUpon>openq-spec.ts</DependentUpon>
-    </Content>
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
