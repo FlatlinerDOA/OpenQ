@@ -1,13 +1,10 @@
 /// <reference path="types/common.d.ts" />
 /// <reference path="./openq.ts" />
 
-export var MessageTypes = {
-    "success": "urn:simpleq/success",
-    "failed": "urn:simpleq/failed"
-};
-
 var express: Express = require("express");
-var openq = require("./openq.ts");
+var memoryRepo = require("./repository-memory.ts");
+
+var openq: OpenQ = require("./openq.ts");
 
 export function listen(port: number = null) {
     port = port || 8000;
@@ -16,9 +13,10 @@ export function listen(port: number = null) {
 
 export class OpenQExpressServer {
     private app: Express.IApplication;
-    private server: OpenQ.IServer = openq.Server();
+    private service: OpenQ.IService;
 
     constructor(peerId: string, port: number) {
+        this.service = openq.createService(memoryRepo.createRepository);
         this.app = express();
         this.app.use(express.bodyParser());
 
@@ -36,7 +34,7 @@ export class OpenQExpressServer {
     }
 
     private signup(req: Express.IRequest, res: Express.IResponse) {
-        this.server.createUser(req.body.username, req.body.password, (err, user) => {
+        this.service.createUser(req.body.username, req.body.password, (err, user) => {
             this.end(err, res);
         });
     }
@@ -61,16 +59,16 @@ export class OpenQExpressServer {
     private success(res: Express.IResponse) {
         res.format({
             html: '<html><body><h1>Well done!</h1></body></html>',
-            json: '{ "type":"urn:simpleq/success" }'
+            json: { "type":"urn:simpleq/success" }
         });
     }
 
     private sendMessage(req: Express.IRequest, res: Express.IResponse) {
         var username = req.param('username');
         var token = req.secure;
-        this.server.getUser(username, '', (err, user) => {
+        this.service.getUser(username, '', (err, user) => {
             if (err) {
-                res.send(400, err.message);
+                res.send(400, err);
                 return;
             }
 

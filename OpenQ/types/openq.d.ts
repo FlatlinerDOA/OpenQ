@@ -1,7 +1,7 @@
 module OpenQ {
-    export function createServer(factory: (userName: string) => OpenQ.IRepository): IServer;
+    export function createService(factory: (userName: string) => OpenQ.IRepository): IService;
 
-    export interface IServer {
+    export interface IService {
         start(callback: (err: any) => void ): void;
         createUser(username: string, token: string, callback?: (err:any, user: IUser) => void ): void;
         getUser(username: string, token: string, callback: (err: any, user: IUser) => void ): void;

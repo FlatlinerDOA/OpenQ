@@ -1,18 +1,25 @@
 /// <reference path="types/common.d.ts" />
 
 export function createServer(repositoryFactory: OpenQ.IRepositoryFactory) {
-    return new Server(repositoryFactory);
+    return new Service(repositoryFactory);
 }
+
+
+export var MessageTypes = {
+    "success": "urn:simpleq/success",
+    "failed": "urn:simpleq/failed"
+};
+
 
 export var Qid = {
     ExpectAny: -1,
     FromFirst: -1,
     FromSecond: 0,
-    Max: 1024 ^ 4,
+    FromLatest: 1024 ^ 4,
     Min: 0
 }
 
-export class Server implements OpenQ.IServer {
+export class Service implements OpenQ.IService {
     private users: User[];
     private usersTable: OpenQ.IRepository;
 
@@ -21,7 +28,7 @@ export class Server implements OpenQ.IServer {
 
     start(callback: (err: any) => void ): void {
         this.usersTable = this.repositoryFactory('urn:openq');
-        this.usersTable.read('urn:openq/users', Qid.Last, 1, () => {
+        this.usersTable.read('urn:openq/users', Qid.FromLatest, 1, () => {
             // TODO: Load out user accounts from the users repository
             callback(null);
         });
