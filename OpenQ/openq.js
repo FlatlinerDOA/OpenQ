@@ -26,7 +26,10 @@ var Service = (function () {
     Service.prototype.createUser = function (username, token, callback) {
         if(this.users[username]) {
             if(callback) {
-                callback(new Error('User already exists'), null);
+                callback({
+                    message: 'User already exists',
+                    name: 'UserAlreadyExists'
+                }, null);
             }
             return;
         }
@@ -38,7 +41,10 @@ var Service = (function () {
     };
     Service.prototype.getUser = function (username, token, callback) {
         if(!this.users[username]) {
-            callback(new Error('User does not exist'), null);
+            callback({
+                message: 'User does not exist',
+                name: 'UserDoesNotExist'
+            }, null);
             return;
         }
         callback(null, this.users[username]);

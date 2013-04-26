@@ -4,12 +4,10 @@ export function createServer(repositoryFactory: OpenQ.IRepositoryFactory) {
     return new Service(repositoryFactory);
 }
 
-
 export var MessageTypes = {
     "success": "urn:simpleq/success",
     "failed": "urn:simpleq/failed"
 };
-
 
 export var Qid = {
     ExpectAny: -1,
@@ -37,7 +35,7 @@ export class Service implements OpenQ.IService {
     createUser(username: string, token?: string, callback?: (err: any, user: OpenQ.IUser) => void ): void {
         if (this.users[username]) {
             if (callback) {
-                callback(new Error('User already exists'), null);
+                callback({ message: 'User already exists', name: 'UserAlreadyExists' }, null);
             }
 
             return;
@@ -52,7 +50,7 @@ export class Service implements OpenQ.IService {
 
     getUser(username: string, token: string, callback: (err: any, user: OpenQ.IUser) => void ): void {
         if (!this.users[username]) {
-            callback(new Error('User does not exist'), null);
+            callback({ message: 'User does not exist', name: 'UserDoesNotExist' }, null);
             return;
         }
 
