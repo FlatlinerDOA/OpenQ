@@ -4,7 +4,13 @@ export function createServer(repositoryFactory: OpenQ.IRepositoryFactory) {
     return new Server(repositoryFactory);
 }
 
-export var Qid = { Last: 1024 ^ 4, First: 0, Any: -1 }
+export var Qid = {
+    ExpectAny: -1,
+    FromFirst: -1,
+    FromSecond: 0,
+    Max: 1024 ^ 4,
+    Min: 0
+}
 
 export class Server implements OpenQ.IServer {
     private users: User[];

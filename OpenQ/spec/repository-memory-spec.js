@@ -1,4 +1,9 @@
 var memoryRepo = require('../repository-memory.ts');
+var Qid = {
+    ExpectAny: -1,
+    FromFirst: -1,
+    FromSecond: 0
+};
 describe('When creating a new memory repo, ', function () {
     var repo = memoryRepo.createRepository('tablename');
     it('then a non-null instance is returned', function () {
@@ -9,7 +14,7 @@ describe('When creating a new memory repo, ', function () {
     });
     describe('When reading an empty repository, ', function () {
         var messages;
-        repo.read('type', 0, 1, function (results) {
+        repo.read('type', Qid.FromFirst, 1, function (results) {
             messages = results;
         });
         it('then the result is an empty array', function () {
@@ -24,7 +29,7 @@ describe('When creating a new memory repo, ', function () {
         var error;
         repo.write([
             newMessage
-        ], -1, function (err) {
+        ], Qid.ExpectAny, function (err) {
             error = err;
         });
         it('then no error is raised', function () {
@@ -32,7 +37,7 @@ describe('When creating a new memory repo, ', function () {
         });
         describe('When reading the first message of the correct type, ', function () {
             var readMessages;
-            repo.read('urn:test', -1, 1, function (results) {
+            repo.read('urn:test', Qid.FromFirst, 1, function (results) {
                 readMessages = results;
             });
             it('then one message is read', function () {
@@ -49,7 +54,7 @@ describe('When creating a new memory repo, ', function () {
         });
         describe('When reading the second message of the correct type, ', function () {
             var readMessages;
-            repo.read('urn:test', 0, 1, function (results) {
+            repo.read('urn:test', Qid.FromSecond, 1, function (results) {
                 readMessages = results;
             });
             it('then zero messages are read', function () {
@@ -59,7 +64,7 @@ describe('When creating a new memory repo, ', function () {
         });
         describe('When reading the first message of a different type, ', function () {
             var readMessages;
-            repo.read('urn:test2', -1, 1, function (results) {
+            repo.read('urn:test2', Qid.FromFirst, 1, function (results) {
                 readMessages = results;
             });
             it('then zero messages are read', function () {
@@ -74,11 +79,11 @@ describe('When creating a new memory repo, ', function () {
                     type: 'urn:test',
                     messageNumber: 2
                 }
-            ], -1, function (err) {
+            ], Qid.ExpectAny, function (err) {
                 error = err;
             });
             var readMessages;
-            repo.read('urn:test', 0, 1, function (results) {
+            repo.read('urn:test', Qid.FromSecond, 1, function (results) {
                 readMessages = results;
             });
             it('then no error is thrown', function () {
@@ -105,7 +110,7 @@ describe('When creating a new memory repo, ', function () {
             });
             it('then the second message is not written', function () {
                 var readMessages;
-                repo.read('urn:test', 0, 1, function (results) {
+                repo.read('urn:test', Qid.FromSecond, 1, function (results) {
                     readMessages = results;
                 });
                 expect(readMessages).not.toBeNull();
