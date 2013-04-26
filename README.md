@@ -15,6 +15,10 @@ The ultimate goal of this project is to create an extremely simple but flexible 
 1. Open a Node command prompt
 2. Run: <pre>node tests.js</pre>
 
+## How to Contribute
+
+If you have a patch that you want accepted simply send us a pull request, make sure your commits are described well with context and any changes to scripts must be made to the TypeScript (not just the Javascript) otherwise they may not be accepted.
+If you **really** want to get involved in the project, email *flatlinerdoa at gmail* and ask to become a contributor!
 
 ## Introduction
 
