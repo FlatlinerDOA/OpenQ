@@ -21,8 +21,8 @@ module OpenQ {
         subscribe(message: ISubscribeMessage, callback?: (err: Error) => void ): void;
         unsubscribe(message: IUnsubscribeMessage, callback?: (err: Error) => void ): void;
         write(message: IMessage[], callback?: (err: Error) => void ): void;
-        read(type: string, afterQid?: number, take?: number, callback?: (err: Error, messages: IMessage[]) => void ): void;
-        markRead(subscriber: string, token: string, lastReadQid: number, callback?: (err: Error) => void ): void;
+        read(messageType: string, afterQid?: number, take?: number, callback?: (err: Error, messages: IMessage[]) => void ): void;
+        markRead(subscriber: string, token: string, messageType:string, lastReadQid: number, callback?: (err: Error) => void ): void;
     }
 
     export interface IMessage {
@@ -73,5 +73,14 @@ module OpenQ {
 
     export interface IPublisher {
         publish(messages: OpenQ.IMessage[], recipient: string): void;
+    }
+
+    export interface ISubscription {
+        subscriber: string;
+        token: string;
+        messageType: string;
+        lastReadQid: number;
+        exclusive: bool;
+        qid: number;
     }
 }

@@ -87,33 +87,51 @@ export class Queue implements OpenQ.IQueue {
     }
 
     requestSubscribe(message: OpenQ.IRequestSubscribeMessage, callback?: (err: Error) => void ): void {
+
     }
 
     subscribe(message: OpenQ.ISubscribeMessage, callback?: (err: Error) => void ): void {
         for (var m = 0; m < message.messagetypes.length; m++) {
-            // TODO: Url encode message types??
             var messageType = message.messagetypes[m];
-            var subscriberMessageTypeRangeKey = message.subscriber + '/' + messageType;
-            this.subscriptions.read(subscriberMessageTypeRangeKey, Qid.FromLatest, 1, (err, s) => {
+            this.getSubscription(message.subscriber, message.token, messageType, (err, s) => {
                 if (err) {
                     callback(err);
                     return;
                 }
 
-                var subscription = { type: messageType, lastReadQid: Qid.FromFirst };
-                if (!message.fromfirstmessage) {
-                    var messageQueue = this.messages;
-                    ////messageQueue.read(messageType, '', )
-                }
-
                 var expectedQid = Qid.First;
-                if (s.length !== 0) {
-                    // Subscription already exists for this message type, do nothing
+                if (s) {
+                    // Subscription already exists for this message type, so do nothing??
                     callback(null);
                     return;
                 }
 
-                this.subscriptions.write(subscriberMessageTypeRangeKey, [subscription], expectedQid, callback);
+                var subscription: OpenQ.ISubscription = {
+                    subscriber: message.subscriber,
+                    token: message.token,
+                    messageType: messageType,
+                    lastReadQid: Qid.FromFirst,
+                    exclusive: message.exclusive,
+                    qid: expectedQid
+                };
+
+                if (!message.fromfirstmessage) {
+                    var messageQueue = this.messages;
+                    var subscriberMessageTypeRangeKey = message.subscriber + '/' + messageType;
+                    this.messages.readLast(messageType, (err, latest) => {
+                        if (err) {
+                            callback(err);
+                            return;
+                        }
+
+                        subscription.lastReadQid = latest.qid;
+                        this.saveSubscription(subscription, callback);
+                    });
+
+                    return;
+                }
+
+                this.saveSubscription(subscription, callback);
             });
         }
     }
@@ -124,24 +142,63 @@ export class Queue implements OpenQ.IQueue {
 
     write(messages: OpenQ.IMessage[], callback?: (err: Error) => void ): void {
         // TODO: Switch for known types to route to type specific handlers
-        var r = this.repositoryFactory('table:users/' + this.userName + '/' + this.queueName);
         for (var m = 0; m < messages.length; m++) {
-            r.write(messages[m].type, messages[m], Qid.ExpectAny, callback);
+            this.messages.write(messages[m].type, messages[m], Qid.ExpectAny, callback);
         }
     }
 
-    read(type: string, afterQid?: number, take?: number, callback?: (err: Error, messages: OpenQ.IMessage[]) => void ): void {
-        var r = this.repositoryFactory('table:users/' + this.userName + '/' + this.queueName);
-        r.read(type, Qid.ExpectAny, take, (err, m) => {
-            
+    read(messageType: string, afterQid?: number, take?: number, callback?: (err: Error, messages: OpenQ.IMessage[]) => void ): void {
+        this.messages.read(messageType, afterQid, take, callback);
+    }
+
+    markRead(subscriber: string, token: string, messageType:string, lastReadQid: number, callback?: (err: Error) => void ) {
+        this.getSubscription(subscriber, token, messageType, (err, subscription) => {
+            if (err) {
+                callback(err);
+                return;
+            }
+
+            if (!subscription) {
+                callback({ message: 'Subscription not found', name: 'SubscriptionNotFound' });
+                return;
+            }
+
+            subscription.lastReadQid = lastReadQid;
+            this.saveSubscription(subscription, callback);
         });
     }
 
-    markRead(subscriber: string, token: string, lastReadQid: number, callback?: (err: Error) => void ) {
-        this.subscriptions.write(subscriber, { type: '', lastReadQid: lastReadQid }, Qid.ExpectAny, callback);
+    private getSubscription(subscriber: string, token: string, messageType: string, callback: (err: Error, subscription: OpenQ.ISubscription) => void ) {
+        // TODO: Url encode message types??
+        var subscriberMessageTypeRangeKey = this.subscriptionKey(subscriber, messageType);
+        this.subscriptions.readLast(subscriberMessageTypeRangeKey, (err, s: OpenQ.ISubscription) => {
+            if (err) {
+                callback(err, null);
+                return;
+            }
+
+            if (!s) {
+                callback(null, null);
+                return;
+            }
+
+            if (s.token !== token) {
+                callback({ message: 'Invalid subscriber or token', name: 'InvalidSubscriberOrToken' }, null);
+            } else {
+                callback(null, s);
+            }
+        });
+    }
+
+    private saveSubscription(subscription: OpenQ.ISubscription, callback: (err: Error) => void ) {
+        var subscriberMessageTypeRangeKey = this.subscriptionKey(subscription.subscriber, subscription.messageType);
+        this.subscriptions.write(subscriberMessageTypeRangeKey, subscription, subscription.qid, callback);
+    }
+
+    private subscriptionKey(subscriber: string, messageType: string): string {
+        return subscriber + '/' + messageType
     }
 }
-
 
 /*
 Sends a message to a subscriber via a direct HTTP POST to their address

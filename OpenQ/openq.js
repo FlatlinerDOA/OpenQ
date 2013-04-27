@@ -83,48 +83,96 @@ var Queue = (function () {
         var _this = this;
         for(var m = 0; m < message.messagetypes.length; m++) {
             var messageType = message.messagetypes[m];
-            var subscriberMessageTypeRangeKey = message.subscriber + '/' + messageType;
-            this.subscriptions.read(subscriberMessageTypeRangeKey, exports.Qid.FromLatest, 1, function (err, s) {
+            this.getSubscription(message.subscriber, message.token, messageType, function (err, s) {
                 if(err) {
                     callback(err);
                     return;
                 }
-                var subscription = {
-                    type: messageType,
-                    lastReadQid: exports.Qid.FromFirst
-                };
-                if(!message.fromfirstmessage) {
-                    var messageQueue = _this.messages;
-                }
                 var expectedQid = exports.Qid.First;
-                if(s.length !== 0) {
+                if(s) {
                     callback(null);
                     return;
                 }
-                _this.subscriptions.write(subscriberMessageTypeRangeKey, [
-                    subscription
-                ], expectedQid, callback);
+                var subscription = {
+                    subscriber: message.subscriber,
+                    token: message.token,
+                    messageType: messageType,
+                    lastReadQid: exports.Qid.FromFirst,
+                    exclusive: message.exclusive,
+                    qid: expectedQid
+                };
+                if(!message.fromfirstmessage) {
+                    var messageQueue = _this.messages;
+                    var subscriberMessageTypeRangeKey = message.subscriber + '/' + messageType;
+                    _this.messages.readLast(messageType, function (err, latest) {
+                        if(err) {
+                            callback(err);
+                            return;
+                        }
+                        subscription.lastReadQid = latest.qid;
+                        _this.saveSubscription(subscription, callback);
+                    });
+                    return;
+                }
+                _this.saveSubscription(subscription, callback);
             });
         }
     };
     Queue.prototype.unsubscribe = function (message, callback) {
     };
     Queue.prototype.write = function (messages, callback) {
-        var r = this.repositoryFactory('table:users/' + this.userName + '/' + this.queueName);
         for(var m = 0; m < messages.length; m++) {
-            r.write(messages[m].type, messages[m], exports.Qid.ExpectAny, callback);
+            this.messages.write(messages[m].type, messages[m], exports.Qid.ExpectAny, callback);
         }
     };
-    Queue.prototype.read = function (type, afterQid, take, callback) {
-        var r = this.repositoryFactory('table:users/' + this.userName + '/' + this.queueName);
-        r.read(type, exports.Qid.ExpectAny, take, function (err, m) {
+    Queue.prototype.read = function (messageType, afterQid, take, callback) {
+        this.messages.read(messageType, afterQid, take, callback);
+    };
+    Queue.prototype.markRead = function (subscriber, token, messageType, lastReadQid, callback) {
+        var _this = this;
+        this.getSubscription(subscriber, token, messageType, function (err, subscription) {
+            if(err) {
+                callback(err);
+                return;
+            }
+            if(!subscription) {
+                callback({
+                    message: 'Subscription not found',
+                    name: 'SubscriptionNotFound'
+                });
+                return;
+            }
+            subscription.lastReadQid = lastReadQid;
+            _this.saveSubscription(subscription, callback);
         });
     };
-    Queue.prototype.markRead = function (subscriber, token, lastReadQid, callback) {
-        this.subscriptions.write(subscriber, {
-            type: '',
-            lastReadQid: lastReadQid
-        }, exports.Qid.ExpectAny, callback);
+    Queue.prototype.getSubscription = function (subscriber, token, messageType, callback) {
+        var subscriberMessageTypeRangeKey = this.subscriptionKey(subscriber, messageType);
+        this.subscriptions.readLast(subscriberMessageTypeRangeKey, function (err, s) {
+            if(err) {
+                callback(err, null);
+                return;
+            }
+            if(!s) {
+                callback(null, null);
+                return;
+            }
+            if(s.token !== token) {
+                callback({
+                    message: 'Invalid subscriber or token',
+                    name: 'InvalidSubscriberOrToken'
+                }, null);
+            } else {
+                callback(null, s);
+            }
+        });
+    };
+    Queue.prototype.saveSubscription = function (subscription, callback) {
+        var subscriberMessageTypeRangeKey = this.subscriptionKey(subscription.subscriber, subscription.messageType);
+        this.subscriptions.write(subscriberMessageTypeRangeKey, subscription, subscription.qid, callback);
+    };
+    Queue.prototype.subscriptionKey = function (subscriber, messageType) {
+        return subscriber + '/' + messageType;
     };
     return Queue;
 })();
