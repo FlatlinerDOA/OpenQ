@@ -19,7 +19,7 @@ var Service = (function () {
     }
     Service.prototype.start = function (callback) {
         this.usersTable = this.repositoryFactory('table:openq');
-        this.usersTable.read('urn:openq/users', exports.Qid.FromLatest, 1, function () {
+        this.usersTable.read('table:users', exports.Qid.FromLatest, 1, function () {
             callback(null);
         });
     };
@@ -99,7 +99,8 @@ var Queue = (function () {
                     messageType: messageType,
                     lastReadQid: exports.Qid.FromFirst,
                     exclusive: message.exclusive,
-                    qid: expectedQid
+                    qid: expectedQid,
+                    messagesperminute: message.messagesperminute
                 };
                 if(!message.fromfirstmessage) {
                     var messageQueue = _this.messages;

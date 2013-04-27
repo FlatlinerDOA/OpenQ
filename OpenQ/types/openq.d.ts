@@ -82,5 +82,6 @@ module OpenQ {
         lastReadQid: number;
         exclusive: bool;
         qid: number;
+        messagesperminute: number;
     }
 }

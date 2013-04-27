@@ -26,7 +26,7 @@ export class Service implements OpenQ.IService {
 
     start(callback: (err: any) => void ): void {
         this.usersTable = this.repositoryFactory('table:openq');
-        this.usersTable.read('urn:openq/users', Qid.FromLatest, 1, () => {
+        this.usersTable.read('table:users', Qid.FromLatest, 1, () => {
             // TODO: Load out user accounts from the users repository
             callback(null);
         });
@@ -89,7 +89,7 @@ export class Queue implements OpenQ.IQueue {
     requestSubscribe(message: OpenQ.IRequestSubscribeMessage, callback?: (err: Error) => void ): void {
 
     }
-
+    
     subscribe(message: OpenQ.ISubscribeMessage, callback?: (err: Error) => void ): void {
         for (var m = 0; m < message.messagetypes.length; m++) {
             var messageType = message.messagetypes[m];
@@ -112,7 +112,8 @@ export class Queue implements OpenQ.IQueue {
                     messageType: messageType,
                     lastReadQid: Qid.FromFirst,
                     exclusive: message.exclusive,
-                    qid: expectedQid
+                    qid: expectedQid,
+                    messagesperminute: message.messagesperminute
                 };
 
                 if (!message.fromfirstmessage) {

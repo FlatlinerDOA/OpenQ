@@ -43,6 +43,9 @@ describe('When creating a new queue, ', () => {
             expect(subscription.subscriber).toBe(subscribeMessage.subscriber);
             expect(subscription.messageType).toBe('urn:type1');
             expect(subscription.qid).toBe(0);
+            expect(subscription.token).toBe('token');
+            expect(subscription.exclusive).toBe(false);
+            expect(subscription.messagesperminute).toBe(60);
         });
     });
 });
