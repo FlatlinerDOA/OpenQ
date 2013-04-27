@@ -14,7 +14,7 @@ describe('When creating a new memory repo, ', function () {
     });
     describe('When reading an empty repository, ', function () {
         var messages;
-        repo.read('type', Qid.FromFirst, 1, function (results) {
+        repo.read('type', Qid.FromFirst, 1, function (err, results) {
             messages = results;
         });
         it('then the result is an empty array', function () {
@@ -27,9 +27,7 @@ describe('When creating a new memory repo, ', function () {
             type: 'urn:test'
         };
         var error;
-        repo.write([
-            newMessage
-        ], Qid.ExpectAny, function (err) {
+        repo.write(newMessage.type, newMessage, Qid.ExpectAny, function (err) {
             error = err;
         });
         it('then no error is raised', function () {
@@ -37,7 +35,7 @@ describe('When creating a new memory repo, ', function () {
         });
         describe('When reading the first message of the correct type, ', function () {
             var readMessages;
-            repo.read('urn:test', Qid.FromFirst, 1, function (results) {
+            repo.read('urn:test', Qid.FromFirst, 1, function (err, results) {
                 readMessages = results;
             });
             it('then one message is read', function () {
@@ -54,7 +52,7 @@ describe('When creating a new memory repo, ', function () {
         });
         describe('When reading the second message of the correct type, ', function () {
             var readMessages;
-            repo.read('urn:test', Qid.FromSecond, 1, function (results) {
+            repo.read('urn:test', Qid.FromSecond, 1, function (err, results) {
                 readMessages = results;
             });
             it('then zero messages are read', function () {
@@ -64,7 +62,7 @@ describe('When creating a new memory repo, ', function () {
         });
         describe('When reading the first message of a different type, ', function () {
             var readMessages;
-            repo.read('urn:test2', Qid.FromFirst, 1, function (results) {
+            repo.read('urn:test2', Qid.FromFirst, 1, function (err, results) {
                 readMessages = results;
             });
             it('then zero messages are read', function () {
@@ -74,16 +72,14 @@ describe('When creating a new memory repo, ', function () {
         });
         describe('When writing a second message with an expected version of -1 (any), ', function () {
             var error = null;
-            repo.write([
-                {
-                    type: 'urn:test',
-                    messageNumber: 2
-                }
-            ], Qid.ExpectAny, function (err) {
+            repo.write('urn:test', {
+                type: 'urn:test',
+                messageNumber: 2
+            }, Qid.ExpectAny, function (err) {
                 error = err;
             });
             var readMessages;
-            repo.read('urn:test', Qid.FromSecond, 1, function (results) {
+            repo.read('urn:test', Qid.FromSecond, 1, function (err, results) {
                 readMessages = results;
             });
             it('then no error is thrown', function () {
@@ -96,12 +92,10 @@ describe('When creating a new memory repo, ', function () {
         });
         describe('When writing a second message with an expected version of 0, ', function () {
             var error = null;
-            repo.write([
-                {
-                    type: 'urn:test',
-                    messageNumber: 2
-                }
-            ], 0, function (err) {
+            repo.write('urn:test', {
+                type: 'urn:test',
+                messageNumber: 2
+            }, 0, function (err) {
                 error = err;
             });
             it('then an error is thrown named \'ExpectedQidViolation\'', function () {
@@ -110,7 +104,7 @@ describe('When creating a new memory repo, ', function () {
             });
             it('then the second message is not written', function () {
                 var readMessages;
-                repo.read('urn:test', Qid.FromSecond, 1, function (results) {
+                repo.read('urn:test', Qid.FromSecond, 1, function (err, results) {
                     readMessages = results;
                 });
                 expect(readMessages).not.toBeNull();

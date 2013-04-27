@@ -72,7 +72,7 @@ export class OpenQExpressServer {
                 return;
             }
 
-            user.inbox.send(req.body, (err:any) => {
+            user.inbox.write(req.body, (err:any) => {
                 this.end(err, res);
             });
         })

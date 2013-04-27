@@ -23,7 +23,7 @@ describe('When creating a new memory repo, ', () => {
     describe('When reading an empty repository, ', () =>
     {
         var messages: OpenQ.IMessage[];
-        repo.read('type', Qid.FromFirst, 1, results => {
+        repo.read('type', Qid.FromFirst, 1, (err, results) => {
             messages = results;
         });
 
@@ -39,7 +39,7 @@ describe('When creating a new memory repo, ', () => {
         }
 
         var error;
-        repo.write([newMessage], Qid.ExpectAny, err => {
+        repo.write(newMessage.type, newMessage, Qid.ExpectAny, err => {
             error = err;
         })
 
@@ -48,7 +48,7 @@ describe('When creating a new memory repo, ', () => {
         describe('When reading the first message of the correct type, ', () => {
             var readMessages: OpenQ.IMessage[];
 
-            repo.read('urn:test', Qid.FromFirst, 1, results => {
+            repo.read('urn:test', Qid.FromFirst, 1, (err, results) => {
                 readMessages = results;
             });
 
@@ -70,7 +70,7 @@ describe('When creating a new memory repo, ', () => {
         describe('When reading the second message of the correct type, ', () => {
             var readMessages: OpenQ.IMessage[];
 
-            repo.read('urn:test', Qid.FromSecond, 1, results => {
+            repo.read('urn:test', Qid.FromSecond, 1, (err, results) => {
                 readMessages = results;
             });
 
@@ -83,7 +83,7 @@ describe('When creating a new memory repo, ', () => {
         describe('When reading the first message of a different type, ', () => {
             var readMessages: OpenQ.IMessage[];
 
-            repo.read('urn:test2', Qid.FromFirst, 1, results => {
+            repo.read('urn:test2', Qid.FromFirst, 1, (err, results) => {
                 readMessages = results;
             });
 
@@ -96,13 +96,13 @@ describe('When creating a new memory repo, ', () => {
         describe('When writing a second message with an expected version of -1 (any), ', () => {
             var error = null;
 
-            repo.write([{ type: 'urn:test', messageNumber: 2 }], Qid.ExpectAny, (err) => {
+            repo.write('urn:test', { type: 'urn:test', messageNumber: 2 }, Qid.ExpectAny, (err) => {
                 error = err;
             });
 
             var readMessages: OpenQ.IMessage[];
 
-            repo.read('urn:test', Qid.FromSecond, 1, results => {
+            repo.read('urn:test', Qid.FromSecond, 1, (err, results) => {
                 readMessages = results;
             });
 
@@ -119,7 +119,7 @@ describe('When creating a new memory repo, ', () => {
         describe('When writing a second message with an expected version of 0, ', () => {
             var error = null;
 
-            repo.write([{ type: 'urn:test', messageNumber: 2 }], 0, (err) => {
+            repo.write('urn:test', { type: 'urn:test', messageNumber: 2 }, 0, (err) => {
                 error = err;
             });
 
@@ -131,7 +131,7 @@ describe('When creating a new memory repo, ', () => {
             it('then the second message is not written', () => {
                 var readMessages: OpenQ.IMessage[];
 
-                repo.read('urn:test', Qid.FromSecond, 1, results => {
+                repo.read('urn:test', Qid.FromSecond, 1, (err, results) => {
                     readMessages = results;
                 });
 

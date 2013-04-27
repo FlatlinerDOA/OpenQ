@@ -1,34 +1,28 @@
+/// <reference path="rx.d.ts" />
 module OpenQ {
     export function createService(factory: (userName: string) => OpenQ.IRepository): IService;
 
     export interface IService {
-        start(callback: (err: any) => void ): void;
-        createUser(username: string, token: string, callback?: (err:any, user: IUser) => void ): void;
-        getUser(username: string, token: string, callback: (err: any, user: IUser) => void ): void;
-        deleteUser(username: string, token: string, callback?: (err: any) => void ): void;
+        start(callback: (err: Error) => void ): void;
+        createUser(userName: string, token: string, callback?: (err: Error, user: IUser) => void ): void;
+        getUser(userName: string, token: string, callback: (err: Error, user: IUser) => void ): void;
+        deleteUser(userName: string, token: string, callback?: (err: Error) => void ): void;
     }
 
     export interface IUser {
-        username: string;
+        userName: string;
 
-        inbox: IInbox;
-        outbox: IOutbox;
-
-        requestSubscribe(message: IRequestSubscribeMessage, callback?: (err: any) => void ): void;
+        inbox: IQueue;
+        outbox: IQueue;
     }
 
-    export interface IInbox {
-        send(message: IMessage[], callback?: (err: any) => void ): void;
-        poll(token: string, afterQid?: number, take?: number, callback?: (err: any, messages: IMessage[]) => void ): void;
-        processedTo(qid: number, callback?: (err: any) => void );
-    }
-
-    export interface IOutbox {
-        subscribe(message: ISubscribeMessage, callback?: (err: any) => void ): void;
-        unsubscribe(message: IUnsubscribeMessage, callback?: (err: any) => void );
-        broadcast(message: IMessage[], callback?: (err: any) => void ): void;
-        poll(afterQid?: number, take?: number, callback?: (err: any, messages: IMessage[]) => void ): void;
-        processedTo(subscriber: string, token: string, qid: number, callback?: (err: any) => void );
+    export interface IQueue {
+        requestSubscribe(message: OpenQ.IRequestSubscribeMessage, callback?: (err: Error) => void ): void;
+        subscribe(message: ISubscribeMessage, callback?: (err: Error) => void ): void;
+        unsubscribe(message: IUnsubscribeMessage, callback?: (err: Error) => void ): void;
+        write(message: IMessage[], callback?: (err: Error) => void ): void;
+        read(type: string, afterQid?: number, take?: number, callback?: (err: Error, messages: IMessage[]) => void ): void;
+        markRead(subscriber: string, token: string, lastReadQid: number, callback?: (err: Error) => void ): void;
     }
 
     export interface IMessage {
@@ -48,6 +42,7 @@ module OpenQ {
         messagetypes: string[];
         messagesperminute: number;
         fromfirstmessage: bool;
+        exclusive: bool;
     }
 
     export interface IUnsubscribeMessage extends IMessage {
@@ -69,7 +64,14 @@ module OpenQ {
 
     export interface IRepository {
         tableName: string;
-        read: (type: string, afterQid: number, take:number, callback: (results: IMessage[]) => void) => void;
-        write: (messages:IMessage[], expectedQid: number, callback: (err: any) => void) => void;
+        write: (rangeKey:string, record: any, expectedSequence: number, callback: (err: Error) => void ) => void;
+        ////writeAll: (rangeKey: string, records: any[], expectedSequence: number, callback: (err: Error) => void ) => void;
+        read: (rangeKey: string, afterSequence: number, take: number, callback: (err: Error, results: any[]) => void) => void;
+        readAll: (rangeKey: string, callback: (err: Error, results: any[]) => void ) => void;
+        readLast: (rangeKey: string, callback: (err: Error, result: any) => void ) => void;
+    }
+
+    export interface IPublisher {
+        publish(messages: OpenQ.IMessage[], recipient: string): void;
     }
 }

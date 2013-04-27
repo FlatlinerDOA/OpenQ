@@ -5,16 +5,16 @@ export function createServer(repositoryFactory: OpenQ.IRepositoryFactory) {
 }
 
 export var MessageTypes = {
-    "success": "urn:simpleq/success",
-    "failed": "urn:simpleq/failed"
+    "success": "urn:openq/success",
+    "failed": "urn:openq/failed"
 };
 
 export var Qid = {
     ExpectAny: -1,
     FromFirst: -1,
     FromSecond: 0,
-    FromLatest: 1024 ^ 4,
-    Min: 0
+    FromLatest: 1024 * 1024 * 1024 * 1024,
+    First: 0
 }
 
 export class Service implements OpenQ.IService {
@@ -25,7 +25,7 @@ export class Service implements OpenQ.IService {
     }
 
     start(callback: (err: any) => void ): void {
-        this.usersTable = this.repositoryFactory('urn:openq');
+        this.usersTable = this.repositoryFactory('table:openq');
         this.usersTable.read('urn:openq/users', Qid.FromLatest, 1, () => {
             // TODO: Load out user accounts from the users repository
             callback(null);
@@ -41,7 +41,7 @@ export class Service implements OpenQ.IService {
             return;
         }
 
-        var u = new User(username, token);
+        var u = new User(username, token, this.repositoryFactory);
         this.users[username] = u;
         if (callback) {
             callback(null, u);
@@ -67,41 +67,101 @@ export class Service implements OpenQ.IService {
 }
 
 class User implements OpenQ.IUser {
-    inbox = new Inbox();
-    outbox = new Outbox();
+    inbox: OpenQ.IQueue;
+    outbox: OpenQ.IQueue;
 
-    constructor(public username: string, public token: string) {
+    constructor(public userName: string, public token: string, private repositoryFactory: OpenQ.IRepositoryFactory) {
         this.token = this.token || '';
-    }
-
-    requestSubscribe(message: OpenQ.IRequestSubscribeMessage, callback?: (err: any) => void ): void {
-        callback(Error('not implemented'));
+        this.inbox = new Queue(this.userName, 'inbox', this.repositoryFactory);
+        this.outbox = new Queue(this.userName, 'outbox', this.repositoryFactory);
     }
 }
 
-class Inbox implements OpenQ.IInbox {
-    send(message: OpenQ.IMessage[], callback?: (err: any) => void ): void {
-        callback(Error('not implemented'));
+export class Queue implements OpenQ.IQueue {
+    subscriptions: OpenQ.IRepository;
+    messages: OpenQ.IRepository;
+
+    constructor(public userName: string, public queueName: string, private repositoryFactory: OpenQ.IRepositoryFactory) {
+        this.subscriptions = this.repositoryFactory('table:users/' + this.userName + '/' + this.queueName + '/subscriptions');
+        this.messages = this.repositoryFactory('table:users/' + this.userName + '/' + this.queueName + '/messages');
     }
 
-    poll(token: string, afterQid?: number, take?: number, callback?: (err: any, messages: OpenQ.IMessage[]) => void ): void {
-        callback(Error('not implemented'), null);
+    requestSubscribe(message: OpenQ.IRequestSubscribeMessage, callback?: (err: Error) => void ): void {
     }
 
-    processedTo(qid: number, callback?: (err: any) => void ) {
-        callback(Error('not implemented'));
+    subscribe(message: OpenQ.ISubscribeMessage, callback?: (err: Error) => void ): void {
+        for (var m = 0; m < message.messagetypes.length; m++) {
+            // TODO: Url encode message types??
+            var messageType = message.messagetypes[m];
+            var subscriberMessageTypeRangeKey = message.subscriber + '/' + messageType;
+            this.subscriptions.read(subscriberMessageTypeRangeKey, Qid.FromLatest, 1, (err, s) => {
+                if (err) {
+                    callback(err);
+                    return;
+                }
+
+                var subscription = { type: messageType, lastReadQid: Qid.FromFirst };
+                if (!message.fromfirstmessage) {
+                    var messageQueue = this.messages;
+                    ////messageQueue.read(messageType, '', )
+                }
+
+                var expectedQid = Qid.First;
+                if (s.length !== 0) {
+                    // Subscription already exists for this message type, do nothing
+                    callback(null);
+                    return;
+                }
+
+                this.subscriptions.write(subscriberMessageTypeRangeKey, [subscription], expectedQid, callback);
+            });
+        }
+    }
+
+    unsubscribe(message: OpenQ.IUnsubscribeMessage, callback?: (err: Error) => void ): void {
+
+    }
+
+    write(messages: OpenQ.IMessage[], callback?: (err: Error) => void ): void {
+        // TODO: Switch for known types to route to type specific handlers
+        var r = this.repositoryFactory('table:users/' + this.userName + '/' + this.queueName);
+        for (var m = 0; m < messages.length; m++) {
+            r.write(messages[m].type, messages[m], Qid.ExpectAny, callback);
+        }
+    }
+
+    read(type: string, afterQid?: number, take?: number, callback?: (err: Error, messages: OpenQ.IMessage[]) => void ): void {
+        var r = this.repositoryFactory('table:users/' + this.userName + '/' + this.queueName);
+        r.read(type, Qid.ExpectAny, take, (err, m) => {
+            
+        });
+    }
+
+    markRead(subscriber: string, token: string, lastReadQid: number, callback?: (err: Error) => void ) {
+        this.subscriptions.write(subscriber, { type: '', lastReadQid: lastReadQid }, Qid.ExpectAny, callback);
     }
 }
 
-class Outbox implements OpenQ.IOutbox {
-    subscribe(message: OpenQ.ISubscribeMessage, callback?: (err: any) => void ): void {
+
+/*
+Sends a message to a subscriber via a direct HTTP POST to their address
+*/
+class HttpPostPublisher implements OpenQ.IPublisher {
+    publish(messages: OpenQ.IMessage[], recipientAddress: string) {
     }
-    unsubscribe(message: OpenQ.IUnsubscribeMessage, callback?: (err: any) => void ) {
+}
+
+/*
+For web clients that start a long polling connection etc.
+*/
+class SocketPublisher implements OpenQ.IPublisher {
+    constructor() {
+        ////var s = require('socket.io');
     }
-    broadcast(message: OpenQ.IMessage[], callback?: (err: any) => void ): void {
+
+    addListener(recipient: string, callback:(err) => void ): void {
     }
-    poll(afterQid?: number, take?: number, callback?: (err: any, messages: OpenQ.IMessage[]) => void ): void {
-    }
-    processedTo(subscriber: string, token: string, qid: number, callback?: (err: any) => void ) {
+
+    publish(messages: OpenQ.IMessage[], recipient: string) {
     }
 }

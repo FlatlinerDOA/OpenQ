@@ -13,43 +13,48 @@ class MemoryRepository implements OpenQ.IRepository {
     constructor(public tableName: string) {
     }
 
-    read(type: string, afterQid: number, take: number, callback: (results: OpenQ.IMessage[]) => void ) {
-        var q = this.getOrCreateQueue(type, false);
+    read(rangeKey: string, afterQid: number, take: number, callback: (err, results: any[]) => void ) {
+        var q = this.getOrCreateQueue(rangeKey, false);
         var fromQid = afterQid + 1;
+        if (take === -1) {
+            take = q.messages.length;
+        }
+
         var finalTake = Math.min(q.messages.length - fromQid, fromQid + take);
 
         var m = q.messages.slice(fromQid, finalTake);
-        callback(m);
+        callback(null, m);
     }
 
-    write(messages: OpenQ.IMessage[], expectedQid: number, callback: (err: any) => void ) {
-        if (messages.length == 0) {
+    readLast(rangeKey: string, callback: (err, results: any) => void ) {
+        var q = this.getOrCreateQueue(rangeKey, false);
+        this.read(rangeKey, q.messages.length - 2, 1, (err, results) => callback(err, results[0]))
+    }
+
+    readAll(rangeKey: string, callback: (err, results: any[]) => void ) {
+        this.read(rangeKey, -1, -1, callback);
+    }
+
+    write(rangeKey: string, record: any, expectedQid: number, callback: (err: any) => void ) {
+        if (!record) {
             callback(null);
             return;
         }
 
-        var q = this.getOrCreateQueue(messages[0].type, true);
-        for (var i = 0; i < messages.length; i++) {
-            var m = messages[i];
-
-            if (q.type != m.type) {
-                q = this.getOrCreateQueue(q.type, true);
-            }
-
-            if (!q.write(m, expectedQid, callback)) {
-                return;
-            }
+        var q = this.getOrCreateQueue(rangeKey, true);
+        if (!q.write(record, expectedQid, callback)) {
+            return;
         }
 
         callback(null);
     }
    
-    getOrCreateQueue(type: string, save: bool): MemoryQueue {
-        var q: MemoryQueue = this.typeQueues[type];
+    getOrCreateQueue(rangeKey: string, save: bool): MemoryQueue {
+        var q: MemoryQueue = this.typeQueues[rangeKey];
         if (!q) {
-            q = new MemoryQueue(type);
+            q = new MemoryQueue(rangeKey);
             if (save) {
-                this.typeQueues[type] = q;
+                this.typeQueues[rangeKey] = q;
             }
         }
 
@@ -59,7 +64,7 @@ class MemoryRepository implements OpenQ.IRepository {
 
 class MemoryQueue {
     messages: OpenQ.IMessage[] = [];
-    constructor(public type: string) {
+    constructor(public rangeKey: string) {
     }
 
     write(message: OpenQ.IMessage, expectedQid: number, callback: (err: any) => void ):bool {

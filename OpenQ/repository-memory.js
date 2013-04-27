@@ -8,36 +8,42 @@ var MemoryRepository = (function () {
         this.typeQueues = {
         };
     }
-    MemoryRepository.prototype.read = function (type, afterQid, take, callback) {
-        var q = this.getOrCreateQueue(type, false);
+    MemoryRepository.prototype.read = function (rangeKey, afterQid, take, callback) {
+        var q = this.getOrCreateQueue(rangeKey, false);
         var fromQid = afterQid + 1;
+        if(take === -1) {
+            take = q.messages.length;
+        }
         var finalTake = Math.min(q.messages.length - fromQid, fromQid + take);
         var m = q.messages.slice(fromQid, finalTake);
-        callback(m);
+        callback(null, m);
     };
-    MemoryRepository.prototype.write = function (messages, expectedQid, callback) {
-        if(messages.length == 0) {
+    MemoryRepository.prototype.readLast = function (rangeKey, callback) {
+        var q = this.getOrCreateQueue(rangeKey, false);
+        this.read(rangeKey, q.messages.length - 2, 1, function (err, results) {
+            return callback(err, results[0]);
+        });
+    };
+    MemoryRepository.prototype.readAll = function (rangeKey, callback) {
+        this.read(rangeKey, -1, -1, callback);
+    };
+    MemoryRepository.prototype.write = function (rangeKey, record, expectedQid, callback) {
+        if(!record) {
             callback(null);
             return;
         }
-        var q = this.getOrCreateQueue(messages[0].type, true);
-        for(var i = 0; i < messages.length; i++) {
-            var m = messages[i];
-            if(q.type != m.type) {
-                q = this.getOrCreateQueue(q.type, true);
-            }
-            if(!q.write(m, expectedQid, callback)) {
-                return;
-            }
+        var q = this.getOrCreateQueue(rangeKey, true);
+        if(!q.write(record, expectedQid, callback)) {
+            return;
         }
         callback(null);
     };
-    MemoryRepository.prototype.getOrCreateQueue = function (type, save) {
-        var q = this.typeQueues[type];
+    MemoryRepository.prototype.getOrCreateQueue = function (rangeKey, save) {
+        var q = this.typeQueues[rangeKey];
         if(!q) {
-            q = new MemoryQueue(type);
+            q = new MemoryQueue(rangeKey);
             if(save) {
-                this.typeQueues[type] = q;
+                this.typeQueues[rangeKey] = q;
             }
         }
         return q;
@@ -45,8 +51,8 @@ var MemoryRepository = (function () {
     return MemoryRepository;
 })();
 var MemoryQueue = (function () {
-    function MemoryQueue(type) {
-        this.type = type;
+    function MemoryQueue(rangeKey) {
+        this.rangeKey = rangeKey;
         this.messages = [];
     }
     MemoryQueue.prototype.write = function (message, expectedQid, callback) {
