@@ -24,7 +24,8 @@ describe('When creating a new memory repo, ', function () {
     });
     describe('When writing a new message with expected qid of -1 (any), ', function () {
         var newMessage = {
-            type: 'urn:test'
+            type: 'urn:test',
+            messageNumber: 1
         };
         var error;
         repo.write(newMessage.type, newMessage, Qid.ExpectAny, function (err) {
@@ -89,6 +90,24 @@ describe('When creating a new memory repo, ', function () {
                 expect(readMessages).not.toBeNull();
                 expect(readMessages.length).toBe(0);
             });
+            describe('When deleting up to the second message, ', function () {
+                var error = null;
+                repo.deleteTo('urn:test', 1, function (err) {
+                    error = err;
+                });
+                it('then no error is thrown', function () {
+                    expect(error).toBeNull();
+                });
+                it('then only the second message remains', function () {
+                    var remainingMessages;
+                    repo.readAll('urn:test', function (err, results) {
+                        remainingMessages = results;
+                    });
+                    expect(remainingMessages).not.toBeNull();
+                    expect(remainingMessages.length).toBe(1);
+                    expect(remainingMessages[0].messageNumber).toBe(2);
+                });
+            });
         });
         describe('When writing a second message with an expected version of 0, ', function () {
             var error = null;
@@ -109,6 +128,38 @@ describe('When creating a new memory repo, ', function () {
                 });
                 expect(readMessages).not.toBeNull();
                 expect(readMessages.length).toBe(0);
+            });
+        });
+    });
+});
+describe('When creating a new memory repo, ', function () {
+    var repo = memoryRepo.createRepository('tablename');
+    describe('When writing three messages, ', function () {
+        var error;
+        for(var i = 0; i < 3; i++) {
+            repo.write('urn:test', {
+                type: 'urn:test',
+                messageNumber: i + 1
+            }, Qid.ExpectAny, function (err) {
+                error = err;
+            });
+        }
+        describe('When deleting up to the third message, ', function () {
+            var error = null;
+            repo.deleteTo('urn:test', 2, function (err) {
+                error = err;
+            });
+            it('then no error is thrown', function () {
+                expect(error).toBeNull();
+            });
+            it('then only the third message remains', function () {
+                var remainingMessages;
+                repo.readAll('urn:test', function (err, results) {
+                    remainingMessages = results;
+                });
+                expect(remainingMessages).not.toBeNull();
+                expect(remainingMessages.length).toBe(1);
+                expect(remainingMessages[0].messageNumber).toBe(3);
             });
         });
     });

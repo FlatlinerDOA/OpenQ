@@ -35,7 +35,8 @@ describe('When creating a new memory repo, ', () => {
 
     describe('When writing a new message with expected qid of -1 (any), ', () => {
         var newMessage: OpenQ.IMessage = {
-            type: 'urn:test'
+            type: 'urn:test',
+            messageNumber: 1
         }
 
         var error;
@@ -114,6 +115,28 @@ describe('When creating a new memory repo, ', () => {
                 expect(readMessages).not.toBeNull();
                 expect(readMessages.length).toBe(0);
             });
+
+            describe('When deleting up to the second message, ', () => {
+                var error = null;
+
+                repo.deleteTo('urn:test', 1, (err) => {
+                    error = err;
+                });
+
+                it('then no error is thrown', () => {
+                    expect(error).toBeNull();
+                });
+
+                it('then only the second message remains', () => {
+                    var remainingMessages: any[];
+                    repo.readAll('urn:test', (err, results) => {
+                        remainingMessages = results;
+                    });
+                    expect(remainingMessages).not.toBeNull();
+                    expect(remainingMessages.length).toBe(1);
+                    expect(remainingMessages[0].messageNumber).toBe(2);
+                });
+            });
         });
 
         describe('When writing a second message with an expected version of 0, ', () => {
@@ -137,6 +160,43 @@ describe('When creating a new memory repo, ', () => {
 
                 expect(readMessages).not.toBeNull();
                 expect(readMessages.length).toBe(0);
+            });
+        });
+
+    });
+});
+
+
+describe('When creating a new memory repo, ', () => {
+    var repo: OpenQ.IRepository = memoryRepo.createRepository('tablename');
+
+    describe('When writing three messages, ', () => {
+        var error;
+        for (var i = 0; i < 3; i++) {
+            repo.write('urn:test', { type: 'urn:test', messageNumber: i + 1 }, Qid.ExpectAny, (err) => {
+                error = err;
+            });
+        }
+
+        describe('When deleting up to the third message, ', () => {
+            var error = null;
+
+            repo.deleteTo('urn:test', 2, (err) => {
+                error = err;
+            });
+
+            it('then no error is thrown', () => {
+                expect(error).toBeNull();
+            });
+
+            it('then only the third message remains', () => {
+                var remainingMessages: any[];
+                repo.readAll('urn:test', (err, results) => {
+                    remainingMessages = results;
+                });
+                expect(remainingMessages).not.toBeNull();
+                expect(remainingMessages.length).toBe(1);
+                expect(remainingMessages[0].messageNumber).toBe(3);
             });
         });
     });

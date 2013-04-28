@@ -120,6 +120,24 @@ var Queue = (function () {
         }
     };
     Queue.prototype.unsubscribe = function (message, callback) {
+        var _this = this;
+        for(var i = 0; i < message.messagetypes.length; i++) {
+            this.getSubscription(message.subscriber, message.token, message.messagetypes[i], function (err, subscription) {
+                if(err) {
+                    callback(err);
+                    return;
+                }
+                if(!subscription) {
+                    callback({
+                        message: 'Subscription not found',
+                        name: 'SubscriptionNotFound'
+                    });
+                    return;
+                }
+                subscription.lastReadQid = subscription.qid;
+                _this.saveSubscription(subscription, callback);
+            });
+        }
     };
     Queue.prototype.write = function (messages, callback) {
         for(var m = 0; m < messages.length; m++) {
@@ -148,8 +166,8 @@ var Queue = (function () {
         });
     };
     Queue.prototype.getSubscription = function (subscriber, token, messageType, callback) {
-        var subscriberMessageTypeRangeKey = this.subscriptionKey(subscriber, messageType);
-        this.subscriptions.readLast(subscriberMessageTypeRangeKey, function (err, s) {
+        var rangeKey = this.subscriptionKey(subscriber, messageType);
+        this.subscriptions.readLast(rangeKey, function (err, s) {
             if(err) {
                 callback(err, null);
                 return;
@@ -169,8 +187,8 @@ var Queue = (function () {
         });
     };
     Queue.prototype.saveSubscription = function (subscription, callback) {
-        var subscriberMessageTypeRangeKey = this.subscriptionKey(subscription.subscriber, subscription.messageType);
-        this.subscriptions.write(subscriberMessageTypeRangeKey, subscription, subscription.qid, callback);
+        var rangeKey = this.subscriptionKey(subscription.subscriber, subscription.messageType);
+        this.subscriptions.write(rangeKey, subscription, subscription.qid, callback);
     };
     Queue.prototype.subscriptionKey = function (subscriber, messageType) {
         return subscriber + '/' + messageType;

@@ -38,6 +38,22 @@ var MemoryRepository = (function () {
         }
         callback(null);
     };
+    MemoryRepository.prototype.deleteTo = function (rangeKey, qid, callback) {
+        var q = this.getOrCreateQueue(rangeKey, false);
+        if(!q) {
+            callback({
+                message: 'Repository not found',
+                name: 'RepositoryNotFound'
+            });
+            return;
+        }
+        if(qid === -1) {
+            delete this.typeQueues[rangeKey];
+        } else {
+            q.deleteTo(qid);
+        }
+        callback(null);
+    };
     MemoryRepository.prototype.getOrCreateQueue = function (rangeKey, save) {
         var q = this.typeQueues[rangeKey];
         if(!q) {
@@ -56,8 +72,8 @@ var MemoryQueue = (function () {
         this.messages = [];
     }
     MemoryQueue.prototype.write = function (message, expectedQid, callback) {
-        if(expectedQid != -1) {
-            if(this.messages.length != expectedQid) {
+        if(expectedQid !== -1) {
+            if(this.messages.length !== expectedQid) {
                 var err = {
                     message: 'Expected next qid to be ' + expectedQid + ' but was ' + this.messages.length,
                     name: 'ExpectedQidViolation'
@@ -69,6 +85,11 @@ var MemoryQueue = (function () {
         message.qid = this.messages.length;
         this.messages.push(message);
         return true;
+    };
+    MemoryQueue.prototype.deleteTo = function (qid) {
+        this.messages = this.messages.filter(function (m) {
+            return m.qid < qid;
+        });
     };
     return MemoryQueue;
 })();

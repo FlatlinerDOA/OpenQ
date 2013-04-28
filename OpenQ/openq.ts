@@ -138,7 +138,22 @@ export class Queue implements OpenQ.IQueue {
     }
 
     unsubscribe(message: OpenQ.IUnsubscribeMessage, callback?: (err: Error) => void ): void {
+        for (var i = 0; i < message.messagetypes.length; i++) {
+            this.getSubscription(message.subscriber, message.token, message.messagetypes[i], (err, subscription) => {
+                if (err) {
+                    callback(err);
+                    return;
+                }
 
+                if (!subscription) {
+                    callback({ message: 'Subscription not found', name: 'SubscriptionNotFound' });
+                    return;
+                }
+
+                subscription.lastReadQid = subscription.qid;
+                this.saveSubscription(subscription, callback);
+            });
+        }
     }
 
     write(messages: OpenQ.IMessage[], callback?: (err: Error) => void ): void {
@@ -171,8 +186,8 @@ export class Queue implements OpenQ.IQueue {
 
     private getSubscription(subscriber: string, token: string, messageType: string, callback: (err: Error, subscription: OpenQ.ISubscription) => void ) {
         // TODO: Url encode message types??
-        var subscriberMessageTypeRangeKey = this.subscriptionKey(subscriber, messageType);
-        this.subscriptions.readLast(subscriberMessageTypeRangeKey, (err, s: OpenQ.ISubscription) => {
+        var rangeKey = this.subscriptionKey(subscriber, messageType);
+        this.subscriptions.readLast(rangeKey, (err, s: OpenQ.ISubscription) => {
             if (err) {
                 callback(err, null);
                 return;
@@ -192,12 +207,12 @@ export class Queue implements OpenQ.IQueue {
     }
 
     private saveSubscription(subscription: OpenQ.ISubscription, callback: (err: Error) => void ) {
-        var subscriberMessageTypeRangeKey = this.subscriptionKey(subscription.subscriber, subscription.messageType);
-        this.subscriptions.write(subscriberMessageTypeRangeKey, subscription, subscription.qid, callback);
+        var rangeKey = this.subscriptionKey(subscription.subscriber, subscription.messageType);
+        this.subscriptions.write(rangeKey, subscription, subscription.qid, callback);
     }
 
-    private subscriptionKey(subscriber: string, messageType: string): string {
-        return subscriber + '/' + messageType
+    private subscriptionKey(subscriber: string, messageType: string) {
+        return subscriber + '/' + messageType;
     }
 }
 

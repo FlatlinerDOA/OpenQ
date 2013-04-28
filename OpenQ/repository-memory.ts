@@ -1,10 +1,8 @@
 /// <reference path="types/common.d.ts" />
 
-
 export function createRepository(tableName: string): OpenQ.IRepository  {
     return new MemoryRepository(tableName);
 }
-
 
 class MemoryRepository implements OpenQ.IRepository {
     typeQueues = {
@@ -13,7 +11,7 @@ class MemoryRepository implements OpenQ.IRepository {
     constructor(public tableName: string) {
     }
 
-    read(rangeKey: string, afterQid: number, take: number, callback: (err, results: any[]) => void ) {
+    read(rangeKey: string, afterQid: number, take: number, callback: (err: Error, results: any[]) => void ) {
         var q = this.getOrCreateQueue(rangeKey, false);
         var fromQid = afterQid + 1;
         if (take === -1) {
@@ -21,21 +19,20 @@ class MemoryRepository implements OpenQ.IRepository {
         }
 
         var finalTake = Math.min(q.messages.length - fromQid, fromQid + take);
-
         var m = q.messages.slice(fromQid, finalTake);
         callback(null, m);
     }
 
-    readLast(rangeKey: string, callback: (err, results: any) => void ) {
+    readLast(rangeKey: string, callback: (err: Error, results: any) => void ) {
         var q = this.getOrCreateQueue(rangeKey, false);
         this.read(rangeKey, q.messages.length - 2, 1, (err, results) => callback(err, results[0]))
     }
 
-    readAll(rangeKey: string, callback: (err, results: any[]) => void ) {
+    readAll(rangeKey: string, callback: (err: Error, results: any[]) => void ) {
         this.read(rangeKey, -1, -1, callback);
     }
 
-    write(rangeKey: string, record: any, expectedQid: number, callback: (err: any) => void ) {
+    write(rangeKey: string, record: any, expectedQid: number, callback: (err: Error) => void ) {
         if (!record) {
             callback(null);
             return;
@@ -49,6 +46,22 @@ class MemoryRepository implements OpenQ.IRepository {
         callback(null);
     }
    
+    deleteTo(rangeKey: string, qid: number, callback: (err: Error) => void ) {
+        var q = this.getOrCreateQueue(rangeKey, false);
+        if (!q) {
+            callback({ message: 'Repository not found', name: 'RepositoryNotFound' });
+            return;
+        }
+
+        if (qid === -1) {
+            delete this.typeQueues[rangeKey];
+        } else {
+            q.deleteTo(qid);
+        }
+
+        callback(null);
+    }
+
     getOrCreateQueue(rangeKey: string, save: bool): MemoryQueue {
         var q: MemoryQueue = this.typeQueues[rangeKey];
         if (!q) {
@@ -67,9 +80,9 @@ class MemoryQueue {
     constructor(public rangeKey: string) {
     }
 
-    write(message: OpenQ.IMessage, expectedQid: number, callback: (err: any) => void ):bool {
-        if (expectedQid != -1) {
-            if (this.messages.length != expectedQid) {
+    write(message: OpenQ.IMessage, expectedQid: number, callback: (err: Error) => void ):bool {
+        if (expectedQid !== -1) {
+            if (this.messages.length !== expectedQid) {
                 var err = { message: 'Expected next qid to be ' + expectedQid + ' but was ' + this.messages.length, name: 'ExpectedQidViolation' };
                 callback(err);
                 return false;
@@ -79,5 +92,9 @@ class MemoryQueue {
         message.qid = this.messages.length;
         this.messages.push(message);
         return true;
+    }
+
+    deleteTo(qid: number) {
+        this.messages = this.messages.filter(m => m.qid < qid);
     }
 }

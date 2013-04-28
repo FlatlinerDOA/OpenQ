@@ -69,6 +69,7 @@ module OpenQ {
         read: (rangeKey: string, afterSequence: number, take: number, callback: (err: Error, results: any[]) => void) => void;
         readAll: (rangeKey: string, callback: (err: Error, results: any[]) => void ) => void;
         readLast: (rangeKey: string, callback: (err: Error, result: any) => void ) => void;
+        deleteTo: (rangeKey: string, qid: number, callback:(err: Error) => void) => void;
     }
 
     export interface IPublisher {
