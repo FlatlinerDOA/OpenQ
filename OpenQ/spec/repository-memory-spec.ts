@@ -12,13 +12,9 @@ var Qid = {
 describe('When creating a new memory repo, ', () => {
     var repo: OpenQ.IRepository = memoryRepo.createRepository('tablename');
 
-    it('then a non-null instance is returned', () => {
-        expect(repo).not.toBeNull();
-    });
+    it('then a non-null instance is returned', () => expect(repo).not.toBeNull());
 
-    it('then the repository has the correct table name', () => {
-        expect(repo.tableName).toBe('tablename');
-    })
+    it('then the repository has the correct table name', () => expect(repo.tableName).toBe('tablename'));
 
     describe('When reading an empty repository, ', () =>
     {
@@ -59,18 +55,15 @@ describe('When creating a new memory repo, ', () => {
             });
 
             it('then the first message is the previously written message', () => {
-
                 expect(readMessages[0]).not.toBeNull();
                 expect(readMessages[0].type).toBe('urn:test');
             });
-            it('then the first message has a qid of zero', () => {
-                expect(readMessages[0].qid).toBe(0);
-            });
+
+            it('then the first message has a qid of zero', () => expect(readMessages[0].qid).toBe(0));
         });
 
         describe('When reading the second message of the correct type, ', () => {
             var readMessages: OpenQ.IMessage[];
-
             repo.read('urn:test', Qid.FromSecond, 1, (err, results) => {
                 readMessages = results;
             });
@@ -83,7 +76,6 @@ describe('When creating a new memory repo, ', () => {
 
         describe('When reading the first message of a different type, ', () => {
             var readMessages: OpenQ.IMessage[];
-
             repo.read('urn:test2', Qid.FromFirst, 1, (err, results) => {
                 readMessages = results;
             });
@@ -96,20 +88,16 @@ describe('When creating a new memory repo, ', () => {
 
         describe('When writing a second message with an expected version of -1 (any), ', () => {
             var error = null;
-
             repo.write('urn:test', { type: 'urn:test', messageNumber: 2 }, Qid.ExpectAny, (err) => {
                 error = err;
             });
 
             var readMessages: OpenQ.IMessage[];
-
             repo.read('urn:test', Qid.FromSecond, 1, (err, results) => {
                 readMessages = results;
             });
 
-            it('then no error is thrown', () => {
-                expect(error).toBeNull();
-            });
+            it('then no error is thrown', () => expect(error).toBeNull());
 
             it('then the second message is written', () => {
                 expect(readMessages).not.toBeNull();
@@ -118,20 +106,18 @@ describe('When creating a new memory repo, ', () => {
 
             describe('When deleting up to the second message, ', () => {
                 var error = null;
-
                 repo.deleteTo('urn:test', 1, (err) => {
                     error = err;
                 });
 
-                it('then no error is thrown', () => {
-                    expect(error).toBeNull();
-                });
+                it('then no error is thrown', () => expect(error).toBeNull());
 
                 it('then only the second message remains', () => {
                     var remainingMessages: any[];
                     repo.readAll('urn:test', (err, results) => {
                         remainingMessages = results;
                     });
+
                     expect(remainingMessages).not.toBeNull();
                     expect(remainingMessages.length).toBe(1);
                     expect(remainingMessages[0].messageNumber).toBe(2);
@@ -153,7 +139,6 @@ describe('When creating a new memory repo, ', () => {
 
             it('then the second message is not written', () => {
                 var readMessages: OpenQ.IMessage[];
-
                 repo.read('urn:test', Qid.FromSecond, 1, (err, results) => {
                     readMessages = results;
                 });
@@ -162,7 +147,6 @@ describe('When creating a new memory repo, ', () => {
                 expect(readMessages.length).toBe(0);
             });
         });
-
     });
 });
 
@@ -179,20 +163,18 @@ describe('When creating a new memory repo, ', () => {
 
         describe('When deleting up to the third message, ', () => {
             var error = null;
-
             repo.deleteTo('urn:test', 2, (err) => {
                 error = err;
             });
 
-            it('then no error is thrown', () => {
-                expect(error).toBeNull();
-            });
+            it('then no error is thrown', () => expect(error).toBeNull());
 
             it('then only the third message remains', () => {
                 var remainingMessages: any[];
                 repo.readAll('urn:test', (err, results) => {
                     remainingMessages = results;
                 });
+
                 expect(remainingMessages).not.toBeNull();
                 expect(remainingMessages.length).toBe(1);
                 expect(remainingMessages[0].messageNumber).toBe(3);
