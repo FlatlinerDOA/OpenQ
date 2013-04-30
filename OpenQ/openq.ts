@@ -45,7 +45,7 @@ export class Service implements OpenQ.IService {
             return;
         }
 
-        var u = new User(username, token, this.repositoryFactory);
+        var u = new User(username, token, this.repositoryFactory, this.publishers);
         this.users[username] = u;
         if (callback) {
             callback(null, u);
