@@ -1,7 +1,7 @@
-function createServer(repositoryFactory) {
+function createService(repositoryFactory) {
     return new Service(repositoryFactory);
 }
-exports.createServer = createServer;
+exports.createService = createService;
 exports.MessageTypes = {
     "success": "urn:openq/success",
     "failed": "urn:openq/failed",

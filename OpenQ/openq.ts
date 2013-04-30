@@ -1,6 +1,6 @@
 /// <reference path="types/common.d.ts" />
 
-export function createServer(repositoryFactory: OpenQ.IRepositoryFactory) {
+export function createService(repositoryFactory: OpenQ.IRepositoryFactory) {
     return new Service(repositoryFactory);
 }
 
