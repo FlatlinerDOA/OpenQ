@@ -75,8 +75,10 @@ This is a failure message that always accompanies a HTTP 4xx response from an Op
 <pre>
 { 
   "type":"urn:openq/failed",
-  "errorcode":"UserNotFound",
-  "error":"The specified user does not exist"
+  "error": {
+    "message":"The specified user does not exist",
+    "name":"UserNotFound" 
+  }
 }
 </pre>
 
