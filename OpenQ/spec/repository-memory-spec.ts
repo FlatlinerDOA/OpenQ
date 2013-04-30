@@ -166,7 +166,6 @@ describe('When creating a new memory repo, ', () => {
     });
 });
 
-
 describe('When creating a new memory repo, ', () => {
     var repo: OpenQ.IRepository = memoryRepo.createRepository('tablename');
 

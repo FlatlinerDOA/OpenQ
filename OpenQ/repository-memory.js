@@ -88,7 +88,7 @@ var MemoryQueue = (function () {
     };
     MemoryQueue.prototype.deleteTo = function (qid) {
         this.messages = this.messages.filter(function (m) {
-            return m.qid < qid;
+            return m.qid >= qid;
         });
     };
     return MemoryQueue;

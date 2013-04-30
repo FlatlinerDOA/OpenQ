@@ -95,6 +95,6 @@ class MemoryQueue {
     }
 
     deleteTo(qid: number) {
-        this.messages = this.messages.filter(m => m.qid < qid);
+        this.messages = this.messages.filter(m => m.qid >= qid);
     }
 }
