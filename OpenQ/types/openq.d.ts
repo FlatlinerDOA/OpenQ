@@ -7,6 +7,8 @@ module OpenQ {
         createUser(userName: string, token: string, callback: (err: Error, user: IUser) => void ): void;
         getUser(userName: string, token: string, callback: (err: Error, user: IUser) => void ): void;
         deleteUser(userName: string, token: string, callback: (err: Error) => void ): void;
+        addPublisher(publisher: OpenQ.IPublisher): void;
+        removePublisher(publisher: OpenQ.IPublisher): void;
     }
 
     export interface IUser {

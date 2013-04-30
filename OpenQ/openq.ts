@@ -6,7 +6,10 @@ export function createServer(repositoryFactory: OpenQ.IRepositoryFactory) {
 
 export var MessageTypes = {
     "success": "urn:openq/success",
-    "failed": "urn:openq/failed"
+    "failed": "urn:openq/failed",
+    "subscribe": "urn:openq/subscribe",
+    "unsubscribe": "urn:openq/unsubscribe",
+    "requestSubscribe": "urn:openq/requestsubscribe",
 };
 
 export var Qid = {
@@ -20,6 +23,7 @@ export var Qid = {
 export class Service implements OpenQ.IService {
     private users: User[];
     private usersTable: OpenQ.IRepository;
+    private publishers: OpenQ.IPublisher[];
 
     constructor(private repositoryFactory: OpenQ.IRepositoryFactory) {
     }
@@ -64,16 +68,26 @@ export class Service implements OpenQ.IService {
             callback(null);
         }
     }
+
+    addPublisher(publisher: OpenQ.IPublisher) {
+        this.removePublisher(publisher);
+        this.publishers.push(publisher);
+    }
+
+    removePublisher(publisher: OpenQ.IPublisher) {
+        this.publishers = this.publishers.filter(p => p !== publisher);
+    }
+
 }
 
 class User implements OpenQ.IUser {
     inbox: Queue;
     outbox: Queue;
 
-    constructor(public userName: string, public token: string, private repositoryFactory: OpenQ.IRepositoryFactory) {
+    constructor(public userName: string, public token: string, private repositoryFactory: OpenQ.IRepositoryFactory, private publishers: OpenQ.IPublisher[]) {
         this.token = this.token || '';
-        this.inbox = new Queue(this.userName, 'inbox', this.repositoryFactory);
-        this.outbox = new Queue(this.userName, 'outbox', this.repositoryFactory);
+        this.inbox = new Queue(this.userName, 'inbox', this.repositoryFactory, this.publishers);
+        this.outbox = new Queue(this.userName, 'outbox', this.repositoryFactory, this.publishers);
     }
 }
 
@@ -83,7 +97,11 @@ export class Queue implements OpenQ.IQueue {
     private messageFilters = {
     };
 
-    constructor(public userName: string, public queueName: string, private repositoryFactory: OpenQ.IRepositoryFactory) {
+    constructor(public userName: string, public queueName: string, private repositoryFactory: OpenQ.IRepositoryFactory, private publishers:OpenQ.IPublisher[] = null) {
+        this.messageFilters[MessageTypes.subscribe] = this.subscribe;
+        this.messageFilters[MessageTypes.unsubscribe] = this.unsubscribe;
+        this.messageFilters[MessageTypes.requestSubscribe] = this.requestSubscribe;
+
         this.subscriptions = this.repositoryFactory('table:users/' + this.userName + '/' + this.queueName + '/subscriptions');
         this.messages = this.repositoryFactory('table:users/' + this.userName + '/' + this.queueName + '/messages');
     }
@@ -120,7 +138,7 @@ export class Queue implements OpenQ.IQueue {
 
                 if (!message.fromfirstmessage) {
                     var messageQueue = this.messages;
-                    var subscriberMessageTypeRangeKey = message.subscriber + '/' + messageType;
+                    var subscriberMessageTypeRangeKey = this.subscriptionKey(message.subscriber,  messageType);
                     this.messages.readLast(messageType, (err, latest) => {
                         if (err) {
                             callback(err);
@@ -160,8 +178,21 @@ export class Queue implements OpenQ.IQueue {
 
     write(messages: OpenQ.IMessage[], callback?: (err: Error) => void ): void {
         // TODO: Switch for known types to route to type specific handlers
+        var completion = (err: Error) => {
+            if (err) {
+                callback(err);
+                return;
+            }
+
+        };
         for (var m = 0; m < messages.length; m++) {
-            this.messages.write(messages[m].type, messages[m], Qid.ExpectAny, callback);
+            var message = messages[m];
+            var filter = this.messageFilters[message.type];
+            if (filter) {
+                this.messageFilters[message.type](message, callback);
+            } else {
+                this.messages.write(message.type, message, Qid.ExpectAny, callback);
+            }
         }
     }
 

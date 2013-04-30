@@ -4,7 +4,10 @@ function createServer(repositoryFactory) {
 exports.createServer = createServer;
 exports.MessageTypes = {
     "success": "urn:openq/success",
-    "failed": "urn:openq/failed"
+    "failed": "urn:openq/failed",
+    "subscribe": "urn:openq/subscribe",
+    "unsubscribe": "urn:openq/unsubscribe",
+    "requestSubscribe": "urn:openq/requestsubscribe"
 };
 exports.Qid = {
     ExpectAny: -1,
@@ -55,27 +58,42 @@ var Service = (function () {
             callback(null);
         }
     };
+    Service.prototype.addPublisher = function (publisher) {
+        this.removePublisher(publisher);
+        this.publishers.push(publisher);
+    };
+    Service.prototype.removePublisher = function (publisher) {
+        this.publishers = this.publishers.filter(function (p) {
+            return p !== publisher;
+        });
+    };
     return Service;
 })();
 exports.Service = Service;
 var User = (function () {
-    function User(userName, token, repositoryFactory) {
+    function User(userName, token, repositoryFactory, publishers) {
         this.userName = userName;
         this.token = token;
         this.repositoryFactory = repositoryFactory;
+        this.publishers = publishers;
         this.token = this.token || '';
-        this.inbox = new Queue(this.userName, 'inbox', this.repositoryFactory);
-        this.outbox = new Queue(this.userName, 'outbox', this.repositoryFactory);
+        this.inbox = new Queue(this.userName, 'inbox', this.repositoryFactory, this.publishers);
+        this.outbox = new Queue(this.userName, 'outbox', this.repositoryFactory, this.publishers);
     }
     return User;
 })();
 var Queue = (function () {
-    function Queue(userName, queueName, repositoryFactory) {
+    function Queue(userName, queueName, repositoryFactory, publishers) {
+        if (typeof publishers === "undefined") { publishers = null; }
         this.userName = userName;
         this.queueName = queueName;
         this.repositoryFactory = repositoryFactory;
+        this.publishers = publishers;
         this.messageFilters = {
         };
+        this.messageFilters[exports.MessageTypes.subscribe] = this.subscribe;
+        this.messageFilters[exports.MessageTypes.unsubscribe] = this.unsubscribe;
+        this.messageFilters[exports.MessageTypes.requestSubscribe] = this.requestSubscribe;
         this.subscriptions = this.repositoryFactory('table:users/' + this.userName + '/' + this.queueName + '/subscriptions');
         this.messages = this.repositoryFactory('table:users/' + this.userName + '/' + this.queueName + '/messages');
     }
@@ -106,7 +124,7 @@ var Queue = (function () {
                 };
                 if(!message.fromfirstmessage) {
                     var messageQueue = _this.messages;
-                    var subscriberMessageTypeRangeKey = message.subscriber + '/' + messageType;
+                    var subscriberMessageTypeRangeKey = _this.subscriptionKey(message.subscriber, messageType);
                     _this.messages.readLast(messageType, function (err, latest) {
                         if(err) {
                             callback(err);
@@ -142,8 +160,20 @@ var Queue = (function () {
         }
     };
     Queue.prototype.write = function (messages, callback) {
+        var completion = function (err) {
+            if(err) {
+                callback(err);
+                return;
+            }
+        };
         for(var m = 0; m < messages.length; m++) {
-            this.messages.write(messages[m].type, messages[m], exports.Qid.ExpectAny, callback);
+            var message = messages[m];
+            var filter = this.messageFilters[message.type];
+            if(filter) {
+                this.messageFilters[message.type](message, callback);
+            } else {
+                this.messages.write(message.type, message, exports.Qid.ExpectAny, callback);
+            }
         }
     };
     Queue.prototype.read = function (messageType, afterQid, take, callback) {
