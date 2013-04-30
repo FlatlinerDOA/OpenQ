@@ -74,6 +74,8 @@ var Queue = (function () {
         this.userName = userName;
         this.queueName = queueName;
         this.repositoryFactory = repositoryFactory;
+        this.messageFilters = {
+        };
         this.subscriptions = this.repositoryFactory('table:users/' + this.userName + '/' + this.queueName + '/subscriptions');
         this.messages = this.repositoryFactory('table:users/' + this.userName + '/' + this.queueName + '/messages');
     }
@@ -198,16 +200,60 @@ var Queue = (function () {
 exports.Queue = Queue;
 var HttpPostPublisher = (function () {
     function HttpPostPublisher() { }
-    HttpPostPublisher.prototype.publish = function (messages, recipientAddress) {
+    HttpPostPublisher.prototype.publish = function (messages, subscriber) {
+        return false;
     };
     return HttpPostPublisher;
 })();
-var SocketPublisher = (function () {
-    function SocketPublisher() {
+exports.HttpPostPublisher = HttpPostPublisher;
+var DispatchPublisher = (function () {
+    function DispatchPublisher() {
+        this.messageHandlers = {
+        };
     }
-    SocketPublisher.prototype.addListener = function (recipient, callback) {
+    DispatchPublisher.prototype.addHandler = function (type, handler) {
+        var handlers = this.messageHandlers[type];
+        if(!handlers) {
+            handlers = [];
+            this.messageHandlers[type] = handlers;
+        }
+        handlers.push(handler);
     };
-    SocketPublisher.prototype.publish = function (messages, recipient) {
+    DispatchPublisher.prototype.publish = function (messages, subscriber) {
+        for(var m = 0; m < messages.length; m++) {
+            var message = messages[m];
+            var handlers = this.messageHandlers[message.type];
+            if(handlers) {
+                for(var h = 0; h < handlers.length; h++) {
+                    if(handlers[h](message, subscriber)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    };
+    return DispatchPublisher;
+})();
+exports.DispatchPublisher = DispatchPublisher;
+var SocketPublisher = (function () {
+    function SocketPublisher(missedMessageRetriever) {
+        if (typeof missedMessageRetriever === "undefined") { missedMessageRetriever = null; }
+        this.missedMessageRetriever = missedMessageRetriever;
+    }
+    SocketPublisher.prototype.addListener = function (subscriber, callback) {
+        if(this.missedMessageRetriever) {
+            this.missedMessageRetriever(subscriber, function (err, messages) {
+                if(err) {
+                    callback(err);
+                    return;
+                }
+            });
+        }
+    };
+    SocketPublisher.prototype.publish = function (messages, subscriber) {
+        return false;
     };
     return SocketPublisher;
 })();
+exports.SocketPublisher = SocketPublisher;

@@ -219,13 +219,13 @@ HTTP POST: https://server.com/username/inbox
 
 #### Request:
 <pre>
-HTTP GET: https://server.com/username/outbox/?afterqid=100&skip=900&type=urn:twitter/tweet
+HTTP GET: https://server.com/username/outbox/?afterqid=100&take=100&type=urn:twitter/tweet
 </pre>
 
 #### Response:
 <pre>
 { 
-  "count": 9000,
+  "totalcount": 102,
   "afterqid":100,
   "messages":[{
       "type":"urn:twitter/tweet",
@@ -245,19 +245,18 @@ HTTP GET: https://server.com/username/outbox/?afterqid=100&skip=900&type=urn:twi
 
 #### Request:
 <pre>
-HTTP GET: https://server.com/username/inbox/?afterqid=100&skip=900&type=urn:twitter/tweet
+HTTP GET: https://server.com/username/inbox/?afterqid=100&take=100&type=urn:twitter/tweet
+auth-token:username:password
 </pre>
 
 #### Response:
 <pre>
-HTTP GET: https://server.com/username/inbox/take=100&skip=0
-auth-token:username:password
 { 
-  "count": 9000,
-  "afterqid":-1,
+  "totalcount": 101,
+  "afterqid":100,
   "messages":[{
     "type":"http://www.msnbc.com/rss.xml",
-    "qid":0,
+    "qid":101,
     "summary":"Lol catz speak out about Anonymous"
    }]
 }

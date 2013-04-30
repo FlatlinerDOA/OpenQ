@@ -67,8 +67,8 @@ export class Service implements OpenQ.IService {
 }
 
 class User implements OpenQ.IUser {
-    inbox: OpenQ.IQueue;
-    outbox: OpenQ.IQueue;
+    inbox: Queue;
+    outbox: Queue;
 
     constructor(public userName: string, public token: string, private repositoryFactory: OpenQ.IRepositoryFactory) {
         this.token = this.token || '';
@@ -80,17 +80,19 @@ class User implements OpenQ.IUser {
 export class Queue implements OpenQ.IQueue {
     subscriptions: OpenQ.IRepository;
     messages: OpenQ.IRepository;
+    private messageFilters = {
+    };
 
     constructor(public userName: string, public queueName: string, private repositoryFactory: OpenQ.IRepositoryFactory) {
         this.subscriptions = this.repositoryFactory('table:users/' + this.userName + '/' + this.queueName + '/subscriptions');
         this.messages = this.repositoryFactory('table:users/' + this.userName + '/' + this.queueName + '/messages');
     }
 
-    requestSubscribe(message: OpenQ.IRequestSubscribeMessage, callback?: (err: Error) => void ): void {
+    requestSubscribe(message: OpenQ.IRequestSubscribeMessage, callback: (err: Error) => void ): void {
 
     }
     
-    subscribe(message: OpenQ.ISubscribeMessage, callback?: (err: Error) => void ): void {
+    subscribe(message: OpenQ.ISubscribeMessage, callback: (err: Error) => void ): void {
         for (var m = 0; m < message.messagetypes.length; m++) {
             var messageType = message.messagetypes[m];
             this.getSubscription(message.subscriber, message.token, messageType, (err, s) => {
@@ -137,7 +139,7 @@ export class Queue implements OpenQ.IQueue {
         }
     }
 
-    unsubscribe(message: OpenQ.IUnsubscribeMessage, callback?: (err: Error) => void ): void {
+    unsubscribe(message: OpenQ.IUnsubscribeMessage, callback: (err: Error) => void ): void {
         for (var i = 0; i < message.messagetypes.length; i++) {
             this.getSubscription(message.subscriber, message.token, message.messagetypes[i], (err, subscription) => {
                 if (err) {
@@ -217,24 +219,70 @@ export class Queue implements OpenQ.IQueue {
 }
 
 /*
-Sends a message to a subscriber via a direct HTTP POST to their address
+Sends a message to a subscriber via a direct HTTP POST to their configured address
 */
-class HttpPostPublisher implements OpenQ.IPublisher {
-    publish(messages: OpenQ.IMessage[], recipientAddress: string) {
+export class HttpPostPublisher implements OpenQ.IPublisher {
+    publish(messages: OpenQ.IMessage[], subscriber: string) {
+        return false;
     }
 }
 
 /*
-For web clients that start a long polling connection etc.
+Invokes one or more functions to handle messages. If a handler returns true the message is longer processed.
 */
-class SocketPublisher implements OpenQ.IPublisher {
-    constructor() {
+export class DispatchPublisher implements OpenQ.IPublisher {
+    messageHandlers = {
+    };
+
+    addHandler(type: string, handler: (message: OpenQ.IMessage, subscriber: string) => bool): void
+    {
+        var handlers = this.messageHandlers[type]
+        if (!handlers) {
+            handlers = [];
+            this.messageHandlers[type] = handlers;
+        }
+
+        handlers.push(handler);
+    }
+
+    publish(messages: OpenQ.IMessage[], subscriber: string): bool {
+        for (var m = 0; m < messages.length; m++) {
+            var message = messages[m];
+            var handlers = this.messageHandlers[message.type];
+            if (handlers) {
+                for (var h = 0; h < handlers.length; h++) {
+                    if (handlers[h](message, subscriber)) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+}
+
+/*
+For web clients that have started a long polling connection etc.
+*/
+export class SocketPublisher implements OpenQ.IPublisher {
+    constructor(private missedMessageRetriever: OpenQ.IMissedMessageRetriever = null) {
         ////var s = require('socket.io');
     }
 
-    addListener(recipient: string, callback:(err) => void ): void {
+    addListener(subscriber: string, callback:(err:Error) => void ): void {
+        // When a subscriber starts listening, we immediately start pushing them messages they've missed since they were last connected (if any).
+        if (this.missedMessageRetriever) {
+            this.missedMessageRetriever(subscriber, (err, messages) => {
+                if (err) {
+                    callback(err);
+                    return;
+                }
+            });
+        }
     }
 
-    publish(messages: OpenQ.IMessage[], recipient: string) {
+    publish(messages: OpenQ.IMessage[], subscriber: string) {
+        return false;
     }
 }

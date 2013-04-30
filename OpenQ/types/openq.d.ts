@@ -4,25 +4,24 @@ module OpenQ {
 
     export interface IService {
         start(callback: (err: Error) => void ): void;
-        createUser(userName: string, token: string, callback?: (err: Error, user: IUser) => void ): void;
+        createUser(userName: string, token: string, callback: (err: Error, user: IUser) => void ): void;
         getUser(userName: string, token: string, callback: (err: Error, user: IUser) => void ): void;
-        deleteUser(userName: string, token: string, callback?: (err: Error) => void ): void;
+        deleteUser(userName: string, token: string, callback: (err: Error) => void ): void;
     }
 
     export interface IUser {
         userName: string;
-
         inbox: IQueue;
         outbox: IQueue;
     }
 
     export interface IQueue {
-        requestSubscribe(message: OpenQ.IRequestSubscribeMessage, callback?: (err: Error) => void ): void;
-        subscribe(message: ISubscribeMessage, callback?: (err: Error) => void ): void;
-        unsubscribe(message: IUnsubscribeMessage, callback?: (err: Error) => void ): void;
-        write(message: IMessage[], callback?: (err: Error) => void ): void;
+        requestSubscribe(message: OpenQ.IRequestSubscribeMessage, callback: (err: Error) => void ): void;
+        subscribe(message: ISubscribeMessage, callback: (err: Error) => void ): void;
+        unsubscribe(message: IUnsubscribeMessage, callback: (err: Error) => void ): void;
+        write(message: IMessage[], callback: (err: Error) => void ): void;
         read(messageType: string, afterQid?: number, take?: number, callback?: (err: Error, messages: IMessage[]) => void ): void;
-        markRead(subscriber: string, token: string, messageType:string, lastReadQid: number, callback?: (err: Error) => void ): void;
+        markRead(subscriber: string, token: string, messageType:string, lastReadQid: number, callback: (err: Error) => void ): void;
     }
 
     export interface IMessage {
@@ -73,7 +72,7 @@ module OpenQ {
     }
 
     export interface IPublisher {
-        publish(messages: OpenQ.IMessage[], recipient: string): void;
+        publish(messages: OpenQ.IMessage[], recipient: string): bool;
     }
 
     export interface ISubscription {
@@ -84,5 +83,9 @@ module OpenQ {
         exclusive: bool;
         qid: number;
         messagesperminute: number;
+    }
+
+    interface IMissedMessageRetriever {
+        (subscriber: string, callback: (err: Error, missedMessages: OpenQ.IMessage[]) => void ): void;
     }
 }
