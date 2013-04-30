@@ -19,6 +19,7 @@ The ultimate goal of this project is to create an extremely simple but flexible 
 
 If you have a patch that you want accepted simply send us a pull request, make sure your commits are described well with context and any changes to scripts must be made to the TypeScript (not just the Javascript) otherwise they may not be accepted.
 If you **really** want to get involved in the project, email *flatlinerdoa at gmail* and ask to become a contributor!
+And please follow the [NodeJS style guidelines!](http://nodeguide.com/style.html)
 
 ## Introduction
 
@@ -187,6 +188,7 @@ A broadcast message can only be sent by the authenticated user on an OpenQ serve
 #### Request:
 <pre>
 HTTP POST: https://server.com/username/outbox
+auth-token:username:password
 [{ 
     "type":"urn:twitter/tweet",
     "tweet":"OMG! OpenQ rocks!"
@@ -207,15 +209,19 @@ When a message is to be sent to a user.
 
 #### Request:
 <pre>
+
 HTTP POST: https://server.com/username/inbox
+auth-token:subscriber:token
+
 [{ 
     "type":"urn:twitter/tweet",
-    "token":"absdfoweighiueghkigwe==",
     "tweet":"OMG! OpenQ rocks!"
 }]
 </pre>
 
-### Polling an outbox for Messages 
+### Non-subscriber Polling an outbox for Messages 
+
+Outboxes can be polled anonymously, in this case the subscriber must remember their position in the queue.
 
 #### Request:
 <pre>
@@ -241,7 +247,9 @@ HTTP GET: https://server.com/username/outbox/?afterqid=100&take=100&type=urn:twi
 </pre>
 
 
-### User polling for Private Inbox Messages 
+### User polling for their Private Inbox Messages 
+
+Because no subscriber is specified, the user themselves is assumed to be the subscriber.
 
 #### Request:
 <pre>
@@ -262,6 +270,28 @@ auth-token:username:password
 }
 </pre>
 
+### Subscriber polling an outbox for Messages 
+
+Because the subscriber is specified, the token must match the existing subscription (otherwise the GET will fail).
+
+#### Request:
+<pre>
+HTTP GET: https://server.com/username/outbox/?subscriber=thirdparty001&take=100&type=urn:twitter/tweet
+auth-token:username:password
+</pre>
+
+#### Response:
+<pre>
+{ 
+  "totalcount": 101,
+  "afterqid":100,
+  "messages":[{
+    "type":"urn:twitter/tweet",
+    "qid":101,
+    "tweet":"Wow! OpenQ is da bomb!"
+   }]
+}
+</pre>
 
 ## Examples
 
@@ -273,11 +303,12 @@ FeedSharkly service periodically refreshes RSS feeds on behalf of a user and del
 
 When a user (in this case FrankyJ) pushes the subscribe link to an RSS feed in the mobile client, the mobile client app posts a subscribe message to the aggregator service's inbox.
 
+#### Request
 <pre>
 HTTP POST: https://q.feedsharkly.com/aggregator/outbox
+auth-token: aggregator:aRieuahfkKTRIhlcdahsfuoeFe==
 { 
   "type":"urn:openq/subscribe",
-  "token":"aRieuahfkKTRIhlcdahsfuoeFe==",
   "subscriber":"https://q.feedsharkly.com/FrankyJ/inbox",
   "messagetypes":["http://www.msnbc.com/rss.xml"]
 }
@@ -285,9 +316,10 @@ HTTP POST: https://q.feedsharkly.com/aggregator/outbox
 
 The service later posts a broadcast message with the RSS content to it's service outbox.
 
+#### Request
 <pre>
 HTTP POST: https://q.feedsharkly.com/aggregator/outbox
-auth-token: aRieuahfkKTRIhlcdahsfuoeFe==
+auth-token: aggregator:aRieuahfkKTRIhlcdahsfuoeFe==
 { 
     "type":"http://www.msnbc.com/rss.xml",
     "summary":"Lol catz speak out about Anonymous"
@@ -296,12 +328,13 @@ auth-token: aRieuahfkKTRIhlcdahsfuoeFe==
 
 The mobile client can then periodically check it's inbox for the top 10 news feeds.
 
+#### Request
 <pre>
 HTTP GET: https://q.feedsharkly.com/FrankyJ/inbox?takelast=10
-auth-token:asdfoygaigbeFEGDkGfbaiyfgL==
+auth-token:FrankyJ:asdfoygaigbeFEGDkGfbaiyfgL==
 </pre>
 
-Response:
+#### Response
 <pre>
 { 
   "count": 2,
@@ -317,7 +350,8 @@ Response:
 }
 </pre>
 
+## License
 
-The license for this is MIT.
+The license for OpenQ is MIT, please refer to the LICENSE.MD for further information.
 
 Andrew Chisholm
