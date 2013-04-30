@@ -29,12 +29,12 @@ Messages can only posted to another user's inbox with a subscription token issue
 
 ## Endpoints
 
-A OpenQ server hosts one or more authenticated Users. 
+An OpenQ server hosts one or more authenticated Users. 
 
 Each user has two endpoints, an **inbox** for receiving messages and an **outbox** for broadcasting messages to the public. 
 
 - The User's inbox can only be read by the owning User.
-- The User's inbox can only be written to by either the authenticated owning User, or external parties that have been issued a Subscription token by the owner.
+- The User's inbox can only be written to by either the authenticated owning User, or external parties that have been issued a Subscription token by the owner. These tokens can be revoked at any time by the owner of the inbox.
 - The User's outbox can be read by anyone.
 - The User's outbox can be written to only by the owning User.
 
@@ -243,6 +243,11 @@ HTTP GET: https://server.com/username/outbox/?afterqid=100&skip=900&type=urn:twi
 
 ### User polling for Private Inbox Messages 
 
+#### Request:
+<pre>
+HTTP GET: https://server.com/username/inbox/?afterqid=100&skip=900&type=urn:twitter/tweet
+</pre>
+
 #### Response:
 <pre>
 HTTP GET: https://server.com/username/inbox/take=100&skip=0
@@ -293,14 +298,14 @@ auth-token: aRieuahfkKTRIhlcdahsfuoeFe==
 The mobile client can then periodically check it's inbox for the top 10 news feeds.
 
 <pre>
-HTTP GET: https://q.feedsharkly.com/FrankyJ/inbox?take=1&skip=0
+HTTP GET: https://q.feedsharkly.com/FrankyJ/inbox?takelast=10
 auth-token:asdfoygaigbeFEGDkGfbaiyfgL==
 </pre>
 
 Response:
 <pre>
 { 
-  "count": 9000,
+  "count": 2,
   "messages":[{
     "type":"http://www.msnbc.com/rss.xml",
     "qid":10,
