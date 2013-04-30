@@ -22,7 +22,7 @@ export class OpenQExpressServer {
 
         this.app.get('/', this.signupForm);
         this.app.post('/signup', this.signup);
-
+        
         this.app.get('/:username/inbox', this.getMessages);
         this.app.post('/:username/inbox', this.sendMessage);
         console.log('OpenQ server listening on http://localhost:' + port + '/')
@@ -49,7 +49,7 @@ export class OpenQExpressServer {
     }
 
     private failed(error: any, res: Express.IResponse) {
-        error.type = "urn:simpleq/failed";
+        error.type = "urn:openq/failed";
         res.format({
             html: '<html><body><h1>Uh oh!</h1><pre>' + error + '</pre></body></html>',
             json: error
@@ -59,13 +59,13 @@ export class OpenQExpressServer {
     private success(res: Express.IResponse) {
         res.format({
             html: '<html><body><h1>Well done!</h1></body></html>',
-            json: { "type":"urn:simpleq/success" }
+            json: { "type":"urn:openq/success" }
         });
     }
 
     private sendMessage(req: Express.IRequest, res: Express.IResponse) {
         var username = req.param('username');
-        var token = req.secure;
+        var token = req.header('auth-token');
         this.service.getUser(username, '', (err, user) => {
             if (err) {
                 res.send(400, err);
@@ -79,5 +79,8 @@ export class OpenQExpressServer {
     }
 
     private getMessages(req: Express.IRequest, res: Express.IResponse) {
+        var username = req.param('username');
+        var token = req.secure;
+
     }
 }

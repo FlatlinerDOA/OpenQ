@@ -37,7 +37,7 @@ define(["require", "exports"], function(require, exports) {
             this.success(res);
         };
         OpenQExpressServer.prototype.failed = function (error, res) {
-            error.type = "urn:simpleq/failed";
+            error.type = "urn:openq/failed";
             res.format({
                 html: '<html><body><h1>Uh oh!</h1><pre>' + error + '</pre></body></html>',
                 json: error
@@ -47,14 +47,14 @@ define(["require", "exports"], function(require, exports) {
             res.format({
                 html: '<html><body><h1>Well done!</h1></body></html>',
                 json: {
-                    "type": "urn:simpleq/success"
+                    "type": "urn:openq/success"
                 }
             });
         };
         OpenQExpressServer.prototype.sendMessage = function (req, res) {
             var _this = this;
             var username = req.param('username');
-            var token = req.secure;
+            var token = req.header('auth-token');
             this.service.getUser(username, '', function (err, user) {
                 if(err) {
                     res.send(400, err);
@@ -66,6 +66,8 @@ define(["require", "exports"], function(require, exports) {
             });
         };
         OpenQExpressServer.prototype.getMessages = function (req, res) {
+            var username = req.param('username');
+            var token = req.secure;
         };
         return OpenQExpressServer;
     })();

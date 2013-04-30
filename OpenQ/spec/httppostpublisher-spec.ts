@@ -4,9 +4,9 @@
 
 var openq = require('../openq.ts');
 
-describe('When creating a new dispatch publisher, ', () => {
-    var d = new openq.DispatchPublisher();
-    describe('When adding a single message handler and publishing a message that should be handled, ', () => {
+describe('When creating a new http post publisher, ', () => {
+    var d = new openq.HttpPostPublisher();
+    /*describe('When adding a single message handler and publishing a message that should be handled, ', () => {
         var callCount = 0;
         var lastHandledType = null;
         var lastSubscriber = null;
@@ -40,5 +40,5 @@ describe('When creating a new dispatch publisher, ', () => {
 
         it('then the handler is not called', () => expect(callCount).toBe(0));
         it('then the result is false', () => expect(result).toBe(false));
-    });
+    });*/
 });
