@@ -10,8 +10,8 @@ The ultimate goal of this project is to create an extremely simple but flexible 
 
 1. Clone the repository and open a Node command prompt
 2. Run: <pre> npm install typescript -g</pre>
-3. To run the tests type: <pre>> node tests.js</pre>
-4. To run the web server type: <pre>> node app.js</pre>
+3. To run the tests type: <pre> node tests.js</pre>
+4. To run the web server type: <pre> node app.js</pre>
 
 
 ## How to Contribute
