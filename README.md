@@ -6,14 +6,13 @@ The OpenQ Server library is a reference implementation written in TypeScript for
 
 The ultimate goal of this project is to create an extremely simple but flexible standard for messaging, that anyone can use in their applications.
 
-## Running OpenQ
+## Getting Started
 
-1. Open a Node command prompt
-2. Run: <pre>node app.js</pre>
+1. Clone the repository and open a Node command prompt
+2. Run: <pre>> npm install typescript -g</pre>
+3. To run the tests type: <pre>> node tests.js</pre>
+4. To run the web server type: <pre>> node app.js</pre>
 
-## Running the Tests
-1. Open a Node command prompt
-2. Run: <pre>node tests.js</pre>
 
 ## How to Contribute
 
@@ -83,15 +82,15 @@ This is a failure message that always accompanies a HTTP 4xx response from an Op
 </pre>
 
 |Name|Type|Description|
-|:---|:---------|:----------|
+|:---|:---|:----------|
 |type|string|URI that identifies this as a failed message|
 |errorcode|string|An error code that allows the client to determine the cause of the error in code|
 |error|string|Human readable message describing why the response failed|
 
-
 ### Common Error Codes
 
-|Status Code|Error Code|Description|
+|Status Code|Name|Message|
+|:----------|:---|:------|
 |404|UserNotFound|The specified user does not exist|
 
 ### Subscribe Message
