@@ -1,5 +1,5 @@
 /// <reference path="rx.d.ts" />
-module OpenQ {
+declare module OpenQ {
     export function createService(factory: (userName: string) => OpenQ.IRepository): IService;
 
     export interface IService {
@@ -13,11 +13,11 @@ module OpenQ {
 
     export interface IUser {
         userName: string;
-        inbox: IQueue;
-        outbox: IQueue;
+        queues: IQueue[];
     }
 
     export interface IQueue {
+        queueName: string;
         requestSubscribe(message: OpenQ.IRequestSubscribeMessage, callback: (err: Error) => void ): void;
         subscribe(message: ISubscribeMessage, callback: (err: Error) => void ): void;
         unsubscribe(message: IUnsubscribeMessage, callback: (err: Error) => void ): void;
@@ -31,10 +31,10 @@ module OpenQ {
         qid?: number;
     }
 
-    export interface IResponse {
-        success: bool;
-        errorcode?: string;
-        error?: string;
+    export interface IResponseMessage {
+        type: string;
+        name?: string;
+        message?: string;
     }
 
     export interface ISubscribeMessage extends IMessage {

@@ -1,3 +1,4 @@
+var _this = this;
 function createService(repositoryFactory) {
     return new Service(repositoryFactory);
 }
@@ -9,6 +10,19 @@ exports.MessageTypes = {
     "unsubscribe": "urn:openq/unsubscribe",
     "requestSubscribe": "urn:openq/requestsubscribe"
 };
+exports.Errors = {
+    "UserAlreadyExists": "User already exists",
+    "SubscriptionNotFound": "Subscription not found",
+    "UserDoesNotExist": "User does not exist",
+    "InvalidSubscriberOrToken": "Invalid subscriber or token",
+    raise: function (name) {
+        return {
+            type: exports.MessageTypes.failed,
+            message: _this[name],
+            name: name
+        };
+    }
+};
 exports.Qid = {
     ExpectAny: -1,
     FromFirst: -1,
@@ -16,23 +30,37 @@ exports.Qid = {
     FromLatest: 1024 * 1024 * 1024 * 1024,
     First: 0
 };
+var TableNames = {
+    users: "table:users",
+    create: function () {
+        var parts = [];
+        for (var _i = 0; _i < (arguments.length - 0); _i++) {
+            parts[_i] = arguments[_i + 0];
+        }
+        var name = "table:";
+        for(var p = 0; p < parts.length; p++) {
+            if(p > 0) {
+                name += '/';
+            }
+            name += encodeURIComponent(parts[p]);
+        }
+        return name;
+    }
+};
 var Service = (function () {
     function Service(repositoryFactory) {
         this.repositoryFactory = repositoryFactory;
     }
     Service.prototype.start = function (callback) {
-        this.usersTable = this.repositoryFactory('table:openq');
-        this.usersTable.read('table:users', exports.Qid.FromLatest, 1, function () {
+        this.usersTable = this.repositoryFactory(TableNames.users);
+        this.usersTable.readAll('range', function (err, results) {
             callback(null);
         });
     };
     Service.prototype.createUser = function (username, token, callback) {
         if(this.users[username]) {
             if(callback) {
-                callback({
-                    message: 'User already exists',
-                    name: 'UserAlreadyExists'
-                }, null);
+                callback(exports.Errors.raise(exports.Errors.UserAlreadyExists), null);
             }
             return;
         }
@@ -44,10 +72,7 @@ var Service = (function () {
     };
     Service.prototype.getUser = function (username, token, callback) {
         if(!this.users[username]) {
-            callback({
-                message: 'User does not exist',
-                name: 'UserDoesNotExist'
-            }, null);
+            callback(exports.Errors.raise(exports.Errors.UserDoesNotExist), null);
             return;
         }
         callback(null, this.users[username]);
@@ -76,12 +101,14 @@ var User = (function () {
         this.token = token;
         this.repositoryFactory = repositoryFactory;
         this.publishers = publishers;
+        this.queues = [];
         this.token = this.token || '';
-        this.inbox = new Queue(this.userName, 'inbox', this.repositoryFactory, this.publishers);
-        this.outbox = new Queue(this.userName, 'outbox', this.repositoryFactory, this.publishers);
+        this.queues['inbox'] = new Queue(this.userName, 'inbox', this.repositoryFactory, this.publishers);
+        this.queues['outbox'] = new Queue(this.userName, 'outbox', this.repositoryFactory, this.publishers);
     }
     return User;
 })();
+exports.User = User;
 var Queue = (function () {
     function Queue(userName, queueName, repositoryFactory, publishers) {
         if (typeof publishers === "undefined") { publishers = null; }
@@ -94,8 +121,8 @@ var Queue = (function () {
         this.messageFilters[exports.MessageTypes.subscribe] = this.subscribe;
         this.messageFilters[exports.MessageTypes.unsubscribe] = this.unsubscribe;
         this.messageFilters[exports.MessageTypes.requestSubscribe] = this.requestSubscribe;
-        this.subscriptions = this.repositoryFactory('table:users/' + this.userName + '/' + this.queueName + '/subscriptions');
-        this.messages = this.repositoryFactory('table:users/' + this.userName + '/' + this.queueName + '/messages');
+        this.subscriptions = this.repositoryFactory(TableNames.create('users', this.userName, this.queueName, 'subscriptions'));
+        this.messages = this.repositoryFactory(TableNames.create('users', this.userName, this.queueName, 'messages'));
     }
     Queue.prototype.requestSubscribe = function (message, callback) {
     };
@@ -148,10 +175,7 @@ var Queue = (function () {
                     return;
                 }
                 if(!subscription) {
-                    callback({
-                        message: 'Subscription not found',
-                        name: 'SubscriptionNotFound'
-                    });
+                    callback(exports.Errors.raise(exports.Errors.UserAlreadyExists));
                     return;
                 }
                 subscription.lastReadQid = subscription.qid;
@@ -187,10 +211,7 @@ var Queue = (function () {
                 return;
             }
             if(!subscription) {
-                callback({
-                    message: 'Subscription not found',
-                    name: 'SubscriptionNotFound'
-                });
+                callback(exports.Errors.raise(exports.Errors.SubscriptionNotFound));
                 return;
             }
             subscription.lastReadQid = lastReadQid;
@@ -209,10 +230,7 @@ var Queue = (function () {
                 return;
             }
             if(s.token !== token) {
-                callback({
-                    message: 'Invalid subscriber or token',
-                    name: 'InvalidSubscriberOrToken'
-                }, null);
+                callback(exports.Errors.raise(exports.Errors.InvalidSubscriberOrToken), null);
             } else {
                 callback(null, s);
             }

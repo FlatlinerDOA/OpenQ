@@ -12,12 +12,39 @@ export var MessageTypes = {
     "requestSubscribe": "urn:openq/requestsubscribe",
 };
 
+export var Errors = {
+    "UserAlreadyExists": "User already exists",
+    "SubscriptionNotFound": "Subscription not found",
+    "UserDoesNotExist": "User does not exist",
+    "InvalidSubscriberOrToken": "Invalid subscriber or token",
+
+    raise: (name: string) => {
+        return { type: MessageTypes.failed, message: this[name], name: name };
+    }
+};
+
 export var Qid = {
     ExpectAny: -1,
     FromFirst: -1,
     FromSecond: 0,
     FromLatest: 1024 * 1024 * 1024 * 1024,
     First: 0
+}
+
+var TableNames = {
+    users: "table:users",
+
+    create:(...parts: any[]) => {
+        var name = "table:";
+        for (var p = 0; p < parts.length; p++) {
+            if (p > 0) {
+                name += '/';
+            }
+
+            name += encodeURIComponent(parts[p]);
+        }
+        return name;
+    }
 }
 
 export class Service implements OpenQ.IService {
@@ -29,8 +56,8 @@ export class Service implements OpenQ.IService {
     }
 
     start(callback: (err: any) => void ): void {
-        this.usersTable = this.repositoryFactory('table:openq');
-        this.usersTable.read('table:users', Qid.FromLatest, 1, () => {
+        this.usersTable = this.repositoryFactory(TableNames.users);
+        this.usersTable.readAll('range', (err, results) => {
             // TODO: Load out user accounts from the users repository
             callback(null);
         });
@@ -39,7 +66,7 @@ export class Service implements OpenQ.IService {
     createUser(username: string, token?: string, callback?: (err: any, user: OpenQ.IUser) => void ): void {
         if (this.users[username]) {
             if (callback) {
-                callback({ message: 'User already exists', name: 'UserAlreadyExists' }, null);
+                callback(Errors.raise(Errors.UserAlreadyExists), null);
             }
 
             return;
@@ -54,7 +81,7 @@ export class Service implements OpenQ.IService {
 
     getUser(username: string, token: string, callback: (err: any, user: OpenQ.IUser) => void ): void {
         if (!this.users[username]) {
-            callback({ message: 'User does not exist', name: 'UserDoesNotExist' }, null);
+            callback(Errors.raise(Errors.UserDoesNotExist), null);
             return;
         }
 
@@ -75,19 +102,19 @@ export class Service implements OpenQ.IService {
     }
 
     removePublisher(publisher: OpenQ.IPublisher) {
+        // IMPROVE: Inefficient removal.
         this.publishers = this.publishers.filter(p => p !== publisher);
     }
-
 }
 
-class User implements OpenQ.IUser {
-    inbox: Queue;
-    outbox: Queue;
+export class User implements OpenQ.IUser {
+    queues:OpenQ.IQueue[] = [];
 
     constructor(public userName: string, public token: string, private repositoryFactory: OpenQ.IRepositoryFactory, private publishers: OpenQ.IPublisher[]) {
         this.token = this.token || '';
-        this.inbox = new Queue(this.userName, 'inbox', this.repositoryFactory, this.publishers);
-        this.outbox = new Queue(this.userName, 'outbox', this.repositoryFactory, this.publishers);
+
+        this.queues['inbox'] = new Queue(this.userName, 'inbox', this.repositoryFactory, this.publishers);
+        this.queues['outbox'] = new Queue(this.userName, 'outbox', this.repositoryFactory, this.publishers);
     }
 }
 
@@ -101,9 +128,9 @@ export class Queue implements OpenQ.IQueue {
         this.messageFilters[MessageTypes.subscribe] = this.subscribe;
         this.messageFilters[MessageTypes.unsubscribe] = this.unsubscribe;
         this.messageFilters[MessageTypes.requestSubscribe] = this.requestSubscribe;
-
-        this.subscriptions = this.repositoryFactory('table:users/' + this.userName + '/' + this.queueName + '/subscriptions');
-        this.messages = this.repositoryFactory('table:users/' + this.userName + '/' + this.queueName + '/messages');
+        
+        this.subscriptions = this.repositoryFactory(TableNames.create('users', this.userName, this.queueName, 'subscriptions'));
+        this.messages = this.repositoryFactory(TableNames.create('users', this.userName, this.queueName, 'messages'));
     }
 
     requestSubscribe(message: OpenQ.IRequestSubscribeMessage, callback: (err: Error) => void ): void {
@@ -166,7 +193,7 @@ export class Queue implements OpenQ.IQueue {
                 }
 
                 if (!subscription) {
-                    callback({ message: 'Subscription not found', name: 'SubscriptionNotFound' });
+                    callback(Errors.raise(Errors.UserAlreadyExists));
                     return;
                 }
 
@@ -183,8 +210,8 @@ export class Queue implements OpenQ.IQueue {
                 callback(err);
                 return;
             }
-
         };
+
         for (var m = 0; m < messages.length; m++) {
             var message = messages[m];
             var filter = this.messageFilters[message.type];
@@ -208,7 +235,7 @@ export class Queue implements OpenQ.IQueue {
             }
 
             if (!subscription) {
-                callback({ message: 'Subscription not found', name: 'SubscriptionNotFound' });
+                callback(Errors.raise(Errors.SubscriptionNotFound));
                 return;
             }
 
@@ -232,7 +259,7 @@ export class Queue implements OpenQ.IQueue {
             }
 
             if (s.token !== token) {
-                callback({ message: 'Invalid subscriber or token', name: 'InvalidSubscriberOrToken' }, null);
+                callback(Errors.raise(Errors.InvalidSubscriberOrToken), null);
             } else {
                 callback(null, s);
             }

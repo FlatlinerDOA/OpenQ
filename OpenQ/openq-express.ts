@@ -1,33 +1,43 @@
 /// <reference path="types/common.d.ts" />
-/// <reference path="./openq.ts" />
-
+import openq = module("openq");
+import memoryRepo = module("repository-memory");
 var express: Express = require("express");
-var memoryRepo = require("./repository-memory.ts");
-
-var openq: OpenQ = require("./openq.ts");
 
 export function listen(port: number = null) {
     port = port || 8000;
-    return new OpenQExpressServer(process.env.COMPUTERNAME + ':' + process.pid, port);
+    var s = new OpenQExpressServer();
+    s.listen('localhost', port);
+    return s;
 }
 
 export class OpenQExpressServer {
     private app: Express.IApplication;
     private service: OpenQ.IService;
+    public instanceId: string;
 
-    constructor(peerId: string, port: number) {
+    constructor() {
+        this.instanceId = process.env.COMPUTERNAME + ':' + process.pid;
         this.service = openq.createService(memoryRepo.createRepository);
+        this.intializeWebServer();
+        this.initializePublishers();
+    }
+
+    public listen(hostName: string, port: number) {
+        console.log('OpenQ server listening on http://' + hostName + ':' + port + '/')
+        this.app.listen(port);
+    }
+    
+    private intializeWebServer() {
         this.app = express();
         this.app.use(express.bodyParser());
 
         this.app.get('/', this.signupForm);
         this.app.post('/signup', this.signup);
-        
-        this.app.get('/:username/inbox', this.getMessages);
-        this.app.post('/:username/inbox', this.sendMessage);
-        console.log('OpenQ server listening on http://localhost:' + port + '/')
-        this.app.listen(port);
+
+        this.app.get('/:username/:queue', this.getMessages);
+        this.app.post('/:username/:queue', this.sendMessage);
     }
+
 
     private signupForm(req: Express.IRequest, res: Express.IResponse) {
         res.send('<html><body><h1>Signup to OpenQ</h1><form action="/signup" method="post"><div><label>Username</label><input type="text" name="username"></div><div><label>Password</label><input type="password" name="password"></div><input type="submit"></form></h1></body></html>');
@@ -65,6 +75,7 @@ export class OpenQExpressServer {
 
     private sendMessage(req: Express.IRequest, res: Express.IResponse) {
         var username = req.param('username');
+        var queue = req.param('queue');
         var token = req.header('auth-token');
         this.service.getUser(username, '', (err, user) => {
             if (err) {
@@ -72,7 +83,7 @@ export class OpenQExpressServer {
                 return;
             }
 
-            user.inbox.write(req.body, (err:any) => {
+            user.queues[queue].write(req.body, (err:any) => {
                 this.end(err, res);
             });
         })
@@ -80,7 +91,7 @@ export class OpenQExpressServer {
 
     private getMessages(req: Express.IRequest, res: Express.IResponse) {
         var username = req.param('username');
-        var token = req.secure;
-
+        var queue = req.param('queue');
+        var token = req.header('auth-token');
     }
 }

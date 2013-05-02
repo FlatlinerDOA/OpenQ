@@ -22,7 +22,7 @@ And please follow the [NodeJS style guidelines!](http://nodeguide.com/style.html
 
 ## Introduction
 
-OpenQ mandates the support of a small list of message types. For a server to be OpenQ compliant it MUST be able to handle all message types outlined below unless otherwise specified.
+OpenQ mandates the support of a small list of message types. For a server to be fully OpenQ compliant it MUST be able to handle all message types outlined below unless otherwise specified.
 
 In OpenQ a username represents a sender and/or recipient in the system. The user may give multiple applications access to their their OpenQ service and how this is authenticated is left open to application developers. In the reference implementation authentication is via HTTP BASIC auth username/password mandated to be over HTTPS.
 Messages can only posted to another user's inbox with a subscription token issued by that User's OpenQ server. Subscriptions can be either set up by the user wanting to receive messages or requested by the sender, but the sender can only send one subscription request.
@@ -35,7 +35,7 @@ Each user has two endpoints, an **inbox** for receiving messages and an **outbox
 
 - The User's inbox can only be read by the owning User.
 - The User's inbox can only be written to by either the authenticated owning User, or external parties that have been issued a Subscription token by the owner. These tokens can be revoked at any time by the owner of the inbox.
-- The User's outbox can be read by anyone.
+- The User's outbox can be read and / or subscribed to by anyone.
 - The User's outbox can be written to only by the owning User.
 
 When a client is reading an inbox or outbox the OpenQ server MUST guarantee the sequence of messages of the same "type". Messages of different types are not guaranteed to be written or read in a consistent sequence.
