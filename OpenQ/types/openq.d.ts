@@ -1,4 +1,3 @@
-/// <reference path="rx.d.ts" />
 declare module OpenQ {
     export function createService(factory: (userName: string) => OpenQ.IRepository): IService;
 

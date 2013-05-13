@@ -1,6 +1,6 @@
 /// <reference path="types/common.d.ts" />
-import openq = module("openq");
-import memoryRepo = module("repository-memory");
+var openq = require("openq");
+var memoryRepo = require("repository-memory");
 var express: Express = require("express");
 
 export function listen(port: number = null) {
@@ -30,6 +30,7 @@ export class OpenQExpressServer {
     private intializeWebServer() {
         this.app = express();
         this.app.use(express.bodyParser());
+        this.app.use('/content', express.static(__dirname + '/content'));
 
         this.app.get('/', this.signupForm);
         this.app.post('/signup', this.signup);
@@ -38,6 +39,8 @@ export class OpenQExpressServer {
         this.app.post('/:username/:queue', this.sendMessage);
     }
 
+    private initializePublishers() {
+    }
 
     private signupForm(req: Express.IRequest, res: Express.IResponse) {
         res.send('<html><body><h1>Signup to OpenQ</h1><form action="/signup" method="post"><div><label>Username</label><input type="text" name="username"></div><div><label>Password</label><input type="password" name="password"></div><input type="submit"></form></h1></body></html>');

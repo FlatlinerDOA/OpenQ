@@ -1,8 +1,8 @@
 require('typescript-require');
-var jasmine = require('jasmine-node');
+var j = require('jasmine-node');
 var sys = require('sys');
-for(var key in jasmine) {
-    global[key] = jasmine[key];
+for(var key in j) {
+    global[key] = j[key];
 }
 var isVerbose = true;
 var showColors = true;
@@ -22,12 +22,12 @@ args.every(function (arg) {
     }
 });
 console.log('Running all tests in ' + __dirname + '/spec');
-jasmine.executeSpecsInFolder({
+j.executeSpecsInFolder({
     specFolders: [
         __dirname + '/spec'
     ]
 }, function (runner, log) {
-    if(runner.results().failedCount == 0) {
+    if(runner.results().failedCount === 0) {
         process.exit(0);
     } else {
         process.exit(1);

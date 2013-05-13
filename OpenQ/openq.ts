@@ -34,6 +34,7 @@ export var Qid = {
 var TableNames = {
     users: "table:users",
 
+    /** creates a table name by safe-concatenating string arguments */
     create:(...parts: any[]) => {
         var name = "table:";
         for (var p = 0; p < parts.length; p++) {
@@ -47,6 +48,7 @@ var TableNames = {
     }
 }
 
+/** OpenQ service that hosts user inboxes */
 export class Service implements OpenQ.IService {
     private users: User[];
     private usersTable: OpenQ.IRepository;
@@ -276,18 +278,14 @@ export class Queue implements OpenQ.IQueue {
     }
 }
 
-/*
-Sends a message to a subscriber via a direct HTTP POST to their configured address
-*/
+/** Sends a message to a subscriber via a direct HTTP POST to their configured address */
 export class HttpPostPublisher implements OpenQ.IPublisher {
     publish(messages: OpenQ.IMessage[], subscriber: string) {
         return false;
     }
 }
 
-/*
-Invokes one or more functions to handle messages. If a handler returns true the message is longer processed.
-*/
+/** Invokes one or more functions to handle messages. If a handler returns true the message is longer processed. */
 export class DispatchPublisher implements OpenQ.IPublisher {
     messageHandlers = {
     };

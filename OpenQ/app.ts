@@ -4,5 +4,5 @@
 require('typescript-require');
 
 // Get functions.ts
-var openq = require("./openq-express.ts");
+var openq = require("openq-express");
 openq.listen();

@@ -1,5 +1,5 @@
-var openq = require('../openq.ts');
-var memoryRepo = require('../repository-memory.ts');
+var openq = require('../openq')
+var memoryRepo = require('../repository-memory')
 describe('When creating a new queue, ', function () {
     var q = new openq.Queue('userName', 'inbox', memoryRepo.createRepository, []);
     it('then the queue has a non null subscriptions table', function () {

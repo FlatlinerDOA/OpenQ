@@ -1,4 +1,4 @@
-var memoryRepo = require('../repository-memory.ts');
+var memoryRepo = require('../repository-memory');
 var Qid = {
     ExpectAny: -1,
     FromFirst: -1,

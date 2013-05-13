@@ -1,4 +1,4 @@
-var openq = require('../openq.ts');
+var openq = require('../openq')
 describe('When creating a new http post publisher, ', function () {
     var d = new openq.HttpPostPublisher();
 });

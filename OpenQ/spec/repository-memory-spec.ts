@@ -1,7 +1,7 @@
 /// <reference path="../types/common.d.ts" />
 /// <reference path="../types/jasmine.d.ts" />
 
-var memoryRepo = require('../repository-memory.ts');
+var memoryRepo = require('../repository-memory');
 
 var Qid = {
     ExpectAny: -1,

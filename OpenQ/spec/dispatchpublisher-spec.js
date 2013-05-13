@@ -1,4 +1,4 @@
-var openq = require('../openq.ts');
+var openq = require('../openq')
 describe('When creating a new dispatch publisher, ', function () {
     var d = new openq.DispatchPublisher();
     describe('When adding a single message handler and publishing a message that should be handled, ', function () {
