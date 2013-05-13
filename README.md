@@ -84,8 +84,8 @@ This is a failure message that always accompanies a HTTP 4xx response from an Op
 |Name|Type|Description|
 |:---|:---|:----------|
 |type|string|URI that identifies this as a failed message|
-|errorcode|string|An error code that allows the client to determine the cause of the error in code|
-|error|string|Human readable message describing why the response failed|
+|error.name|string|An error code that allows the client to determine the cause of the error in code|
+|error.message|string|Human readable message describing why the response failed|
 
 ### Common Error Codes
 
