@@ -318,9 +318,7 @@ export class DispatchPublisher implements OpenQ.IPublisher {
     }
 }
 
-/*
-For web clients that have started a long polling connection etc.
-*/
+/** For web clients that have started a long polling connection etc. */
 export class SocketPublisher implements OpenQ.IPublisher {
     constructor(private missedMessageRetriever: OpenQ.IMissedMessageRetriever = null) {
         ////var s = require('socket.io');

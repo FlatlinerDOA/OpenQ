@@ -20,9 +20,19 @@
     <TypeScriptCompile Include="openq.ts" />
     <TypeScriptCompile Include="loadtests.ts" />
     <Content Include="content\index.html" />
+    <Content Include="content\IntroductionView.html" />
+    <Content Include="content\scripts\jquery-1.10.1.js" />
     <Content Include="content\scripts\knockout-latest.debug.js" />
     <Content Include="content\scripts\knockout-latest.js" />
-    <Content Include="content\signup.html" />
+    <TypeScriptCompile Include="content\RootViewModel.ts" />
+    <Content Include="content\RootViewModel.js">
+      <DependentUpon>RootViewModel.ts</DependentUpon>
+    </Content>
+    <Content Include="content\signup\SignupFormView.html" />
+    <TypeScriptCompile Include="content\signup\SignupFormViewModel.ts" />
+    <Content Include="content\signup\SignupFormViewModel.js">
+      <DependentUpon>SignupFormViewModel.ts</DependentUpon>
+    </Content>
     <Content Include="content\styles\accordion.less" />
     <Content Include="content\styles\bricks.less" />
     <Content Include="content\styles\buttons.less" />
@@ -101,7 +111,10 @@
     </Content>
     <TypeScriptCompile Include="tests.ts" />
     <TypeScriptCompile Include="types\openq.d.ts" />
+    <TypeScriptCompile Include="types\client.d.ts" />
     <Content Include="types\jasmine.d.ts" />
+    <TypeScriptCompile Include="types\knockout.d.ts" />
+    <TypeScriptCompile Include="types\jquery.d.ts" />
     <Content Include="types\rx.d.ts" />
     <TypeScriptCompile Include="types\common.d.ts" />
     <Content Include="default.htm" />
@@ -135,7 +148,9 @@
       <DependentUpon>web.config</DependentUpon>
     </None>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="content\common\" />
+  </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>

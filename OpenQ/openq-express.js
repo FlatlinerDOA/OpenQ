@@ -1,5 +1,5 @@
-var openq = require("openq");
-var memoryRepo = require("repository-memory");
+var openq = require("./openq");
+var memoryRepo = require("./repository-memory");
 var express = require("express");
 function listen(port) {
     if (typeof port === "undefined") { port = null; }
@@ -23,8 +23,7 @@ var OpenQExpressServer = (function () {
     OpenQExpressServer.prototype.intializeWebServer = function () {
         this.app = express();
         this.app.use(express.bodyParser());
-        this.app.use('/content', express.static(__dirname + '/content'));
-        this.app.get('/', this.signupForm);
+        this.app.use('/', express.static(__dirname + '/content'));
         this.app.post('/signup', this.signup);
         this.app.get('/:username/:queue', this.getMessages);
         this.app.post('/:username/:queue', this.sendMessage);

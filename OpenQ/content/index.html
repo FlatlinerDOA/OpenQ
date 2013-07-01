@@ -1,12 +1,27 @@
 ﻿<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml">
-<head>
-    <title>OpenQ service</title>
-    <link rel="stylesheet" href="styles/modern.css"/>
-    <script src="scripts/knockout-latest.debug.js" type="text/javascript"></script>
-</head>
-<body>
-    <h1>Welcome to OpenQ</h1>
-    <button>Signup now</button>
-</body>
+<html lang="en">
+    <head>
+        <title>OpenQ service</title>
+        <link rel="stylesheet" href="styles/modern.css"/>
+        <script src="scripts/jquery-1.10.1.js" type="text/javascript"></script>
+        <script src="scripts/knockout-latest.debug.js" type="text/javascript"></script>
+        <script src="scripts/infuser.js" type="text/javascript"></script>
+        <script src="scripts/TrafficCop.js" type="text/javascript"></script>
+        <script src="scripts/koExternalTemplateEngine.js" type="text/javascript"></script>
+        <script src="common/Navigation.js" type="text/javascript"></script>
+        <script src="main/RootViewModel.js" type="text/javascript"></script>
+        <script src="main/HomeViewModel.js" type="text/javascript"></script>
+        <script src="main/SignupFormViewModel.js" type="text/javascript"></script>
+    </head>
+    <body>
+        <div data-bind="template: { name: templateName, data: currentViewModel, templateUrl: 'templates' }"></div>
+        <div class="page secondary">
+            <div class="page-region">
+                <div class="page-region-content">
+                    <pre data-bind="text: JSON.stringify(ko.toJS($data), null, 2)"></pre>
+                    <div>Styled with <a href="http://metroui.org.ua">Metro UI CSS</a></div>
+                </div>
+            </div>
+        </div>
+    </body>
 </html>

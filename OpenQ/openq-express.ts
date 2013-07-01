@@ -1,6 +1,6 @@
 /// <reference path="types/common.d.ts" />
-var openq = require("openq");
-var memoryRepo = require("repository-memory");
+var openq = require("./openq");
+var memoryRepo = require("./repository-memory");
 var express: Express = require("express");
 
 export function listen(port: number = null) {
@@ -30,9 +30,7 @@ export class OpenQExpressServer {
     private intializeWebServer() {
         this.app = express();
         this.app.use(express.bodyParser());
-        this.app.use('/content', express.static(__dirname + '/content'));
-
-        this.app.get('/', this.signupForm);
+        this.app.use('/', express.static(__dirname + '/content'));
         this.app.post('/signup', this.signup);
 
         this.app.get('/:username/:queue', this.getMessages);
