@@ -2,6 +2,7 @@
 var openq = require("./openq");
 var memoryRepo = require("./repository-memory");
 var express = require("express");
+var crypto = require("crypto");
 
 export function listen(port: number = null) {
     port = port || 8000;
@@ -18,12 +19,13 @@ export class OpenQExpressServer {
     constructor() {
         this.instanceId = process.env.COMPUTERNAME + ':' + process.pid;
         this.service = openq.createService(memoryRepo.createRepository);
+
         this.intializeWebServer();
         this.initializePublishers();
     }
 
     public listen(hostName: string, port: number) {
-        console.log('OpenQ server listening on http://' + hostName + ':' + port + '/')
+        console.log('OpenQ web server listening on http://' + hostName + ':' + port + '/')
         this.app.listen(port);
     }
     
@@ -31,17 +33,12 @@ export class OpenQExpressServer {
         this.app = express();
         this.app.use(express.bodyParser());
         this.app.use('/', express.static(__dirname + '/content'));
-        this.app.post('/signup', this.signup);
-
-        this.app.get('/:username/:queue', this.getMessages);
-        this.app.post('/:username/:queue', this.sendMessage);
+        this.app.post('/api/signup', this.signup);
+        this.app.get('/api/:username/:queue', this.getMessages);
+        this.app.post('/api/:username/:queue', this.sendMessage);
     }
 
     private initializePublishers() {
-    }
-
-    private signupForm(req: ExpressServerRequest, res: ExpressServerResponse) {
-        res.send('<html><body><h1>Signup to OpenQ</h1><form action="/signup" method="post"><div><label>Username</label><input type="text" name="username"></div><div><label>Password</label><input type="password" name="password"></div><input type="submit"></form></h1></body></html>');
     }
 
     private signup(req: ExpressServerRequest, res: ExpressServerResponse) {
