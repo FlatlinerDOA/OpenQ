@@ -9,16 +9,19 @@ The ultimate goal of this project is to create an extremely simple but flexible 
 ## Getting Started
 
 1. Clone the repository and open a Node command prompt
-2. Run: <pre> npm install typescript -g</pre>
-3. To run the tests type: <pre> node tests.js</pre>
-4. To run the web server type: <pre> node app.js</pre>
+2. Run: <pre>npm install typescript -g</pre>
+3. To run the tests type: <pre>node tests.js</pre>
+4. To run the web server type: <pre>node app.js</pre>
 
+### Development
+1. To make changes to the TypeScript source code it is recommended you install the Grunt command line interface: <pre>npm install grunt-cli -g</pre>
+2. Then to continuously compile changes to your TypeScript files run: <pre>grunt</pre>
 
 ## How to Contribute
 
 If you have a patch that you want accepted simply send us a pull request, make sure your commits are described well with context and any changes to scripts must be made to the TypeScript (not just the Javascript) otherwise they may not be accepted.
 If you **really** want to get involved in the project, email *flatlinerdoa at gmail* and ask to become a contributor!
-And please follow the [NodeJS style guidelines!](http://nodeguide.com/style.html)
+And please follow the *(unofficial)* [NodeJS style guidelines!](http://nodeguide.com/style.html)
 
 ## Introduction
 
