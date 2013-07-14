@@ -19,7 +19,7 @@ export var Errors = {
     "InvalidSubscriberOrToken": "Invalid subscriber or token",
 
     raise: (name: string) => {
-        return { type: MessageTypes.failed, message: this[name], name: name };
+        return { type: MessageTypes.failed, message: Errors[name], name: name };
     }
 };
 

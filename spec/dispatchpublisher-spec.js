@@ -1,4 +1,5 @@
-var openq = require('../openq')
+var openq = require('../openq');
+
 describe('When creating a new dispatch publisher, ', function () {
     var d = new openq.DispatchPublisher();
     describe('When adding a single message handler and publishing a message that should be handled, ', function () {
@@ -11,11 +12,9 @@ describe('When creating a new dispatch publisher, ', function () {
             lastSubscriber = s;
             return true;
         });
-        var result = d.publish([
-            {
-                type: 'urn:twitter/tweet'
-            }
-        ], 'subscriber');
+
+        var result = d.publish([{ type: 'urn:twitter/tweet' }], 'subscriber');
+
         it('then the handler is called once', function () {
             return expect(callCount).toBe(1);
         });
@@ -29,6 +28,7 @@ describe('When creating a new dispatch publisher, ', function () {
             return expect(lastSubscriber).toBe('subscriber');
         });
     });
+
     describe('When adding a single message handler and publishing a message that shouldn\'t be handled, ', function () {
         var callCount = 0;
         var lastHandledType = null;
@@ -39,11 +39,9 @@ describe('When creating a new dispatch publisher, ', function () {
             lastSubscriber = s;
             return true;
         });
-        var result = d.publish([
-            {
-                type: 'urn:facebook/statusupdate'
-            }
-        ], 'subscriber');
+
+        var result = d.publish([{ type: 'urn:facebook/statusupdate' }], 'subscriber');
+
         it('then the handler is not called', function () {
             return expect(callCount).toBe(0);
         });
@@ -52,3 +50,4 @@ describe('When creating a new dispatch publisher, ', function () {
         });
     });
 });
+

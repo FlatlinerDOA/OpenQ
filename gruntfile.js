@@ -9,17 +9,16 @@
         connect: {
             server: {
                 options: {
-                    port: 8080,
+                    port: 8000,
                     base: './'
                 }
             }
         },
         typescript: {
             base: {
-                src: ['./**/*.ts'],
-                dest: 'js/PixelVisionJSDemos.js',
+                src: ['**/*.ts'],
                 options: {
-                    module: 'amd',
+                    module: 'requirejs',
                     target: 'es5'
                 }
             }
@@ -30,11 +29,10 @@
         },
         open: {
             dev: {
-                path: 'http://localhost:8080/index.html'
+                path: 'http://localhost:8000/index.html'
             }
         }
     });
 
-    grunt.registerTask('default', ['connect', 'open', 'watch']);
-
+    grunt.registerTask('default', ['typescript:base', 'watch']);
 }

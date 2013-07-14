@@ -1,7 +1,7 @@
 /// <reference path="types/common.d.ts" />
 var openq = require("./openq");
 var memoryRepo = require("./repository-memory");
-var express: Express = require("express");
+var express = require("express");
 
 export function listen(port: number = null) {
     port = port || 8000;
@@ -11,7 +11,7 @@ export function listen(port: number = null) {
 }
 
 export class OpenQExpressServer {
-    private app: Express.IApplication;
+    private app: ExpressApplication;
     private service: OpenQ.IService;
     public instanceId: string;
 
@@ -40,17 +40,17 @@ export class OpenQExpressServer {
     private initializePublishers() {
     }
 
-    private signupForm(req: Express.IRequest, res: Express.IResponse) {
+    private signupForm(req: ExpressServerRequest, res: ExpressServerResponse) {
         res.send('<html><body><h1>Signup to OpenQ</h1><form action="/signup" method="post"><div><label>Username</label><input type="text" name="username"></div><div><label>Password</label><input type="password" name="password"></div><input type="submit"></form></h1></body></html>');
     }
 
-    private signup(req: Express.IRequest, res: Express.IResponse) {
+    private signup(req: ExpressServerRequest, res: ExpressServerResponse) {
         this.service.createUser(req.body.username, req.body.password, (err, user) => {
             this.end(err, res);
         });
     }
 
-    private end(error: any, res: Express.IResponse) {
+    private end(error: any, res: ExpressServerResponse) {
         if (error) {
             this.failed(error, res);
             return;
@@ -59,7 +59,7 @@ export class OpenQExpressServer {
         this.success(res);
     }
 
-    private failed(error: any, res: Express.IResponse) {
+    private failed(error: any, res: ExpressServerResponse) {
         error.type = "urn:openq/failed";
         res.format({
             html: '<html><body><h1>Uh oh!</h1><pre>' + error + '</pre></body></html>',
@@ -67,14 +67,14 @@ export class OpenQExpressServer {
         });
     }
 
-    private success(res: Express.IResponse) {
+    private success(res: ExpressServerResponse) {
         res.format({
             html: '<html><body><h1>Well done!</h1></body></html>',
             json: { "type":"urn:openq/success" }
         });
     }
 
-    private sendMessage(req: Express.IRequest, res: Express.IResponse) {
+    private sendMessage(req: ExpressServerRequest, res: ExpressServerResponse) {
         var username = req.param('username');
         var queue = req.param('queue');
         var token = req.header('auth-token');
@@ -90,7 +90,7 @@ export class OpenQExpressServer {
         })
     }
 
-    private getMessages(req: Express.IRequest, res: Express.IResponse) {
+    private getMessages(req: ExpressServerRequest, res: ExpressServerResponse) {
         var username = req.param('username');
         var queue = req.param('queue');
         var token = req.header('auth-token');

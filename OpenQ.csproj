@@ -79,6 +79,7 @@
     <Content Include="content\styles\typography.min.css">
       <DependentUpon>typography.less</DependentUpon>
     </Content>
+    <Content Include="gruntfile.js" />
     <Content Include="loadtests.js">
       <DependentUpon>loadtests.ts</DependentUpon>
     </Content>
@@ -128,7 +129,6 @@
     <TypeScriptCompile Include="types\jquery.d.ts" />
     <Content Include="types\rx.d.ts" />
     <TypeScriptCompile Include="types\common.d.ts" />
-    <Content Include="default.htm" />
     <Content Include="app.js">
       <DependentUpon>app.ts</DependentUpon>
     </Content>
@@ -152,6 +152,8 @@
     <Content Include="content\styles\theme-dark.less" />
     <Content Include="content\styles\tiles.less" />
     <Content Include="content\styles\typography.less" />
+    <Content Include="LICENSE.md" />
+    <Content Include="README.md" />
     <None Include="web.Debug.config">
       <DependentUpon>web.config</DependentUpon>
     </None>
