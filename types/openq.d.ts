@@ -10,6 +10,12 @@ declare module OpenQ {
         removePublisher(publisher: OpenQ.IPublisher): void;
     }
 
+    export interface IError extends Error
+    {
+        status: number;
+        type: string;
+    }
+
     export interface IUser {
         userName: string;
         queues: IQueue[];

@@ -20,6 +20,10 @@
     <TypeScriptCompile Include="openq.ts" />
     <TypeScriptCompile Include="loadtests.ts" />
     <TypeScriptCompile Include="content\common\Navigation.ts" />
+    <TypeScriptCompile Include="content\common\Lib.ts" />
+    <Content Include="content\common\Lib.js">
+      <DependentUpon>Lib.ts</DependentUpon>
+    </Content>
     <Content Include="content\common\Navigation.js">
       <DependentUpon>Navigation.ts</DependentUpon>
     </Content>

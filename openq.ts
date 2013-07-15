@@ -13,15 +13,20 @@ export var MessageTypes = {
 };
 
 export var Errors = {
-    "UserAlreadyExists": "User already exists",
-    "SubscriptionNotFound": "Subscription not found",
-    "UserDoesNotExist": "User does not exist",
-    "InvalidSubscriberOrToken": "Invalid subscriber or token",
+    "UserAlreadyExists": { name: "UserAlreadyExists", message: "User already exists", status: 409 },
+    "SubscriptionNotFound": { name: "SubscriptionNotFound", message: "Subscription not found", status: 400 },
+    "UserDoesNotExist": { name: "UserDoesNotExist", message: "User does not exist", status: 400 },
+    "InvalidSubscriberOrToken": { name: "InvalidSubscriberOrToken", message: "Invalid subscriber or token", status: 400 },
 
-    raise: (name: string) => {
-        return { type: MessageTypes.failed, message: Errors[name], name: name };
+    raise: (error: any): OpenQ.IError => {
+        return {
+            type: MessageTypes.failed,
+            message: error.message,
+            status: error.status,
+            name: error.name
+        };
     }
-};
+}
 
 export var Qid = {
     ExpectAny: -1,
@@ -50,7 +55,7 @@ var TableNames = {
 
 /** OpenQ service that hosts user inboxes */
 export class Service implements OpenQ.IService {
-    private users: User[];
+    private users: User[] = [];
     private usersTable: OpenQ.IRepository;
     private publishers: OpenQ.IPublisher[];
 
@@ -83,6 +88,8 @@ export class Service implements OpenQ.IService {
 
     getUser(username: string, token: string, callback: (err: any, user: OpenQ.IUser) => void ): void {
         if (!this.users[username]) {
+            console.log(Errors.UserDoesNotExist);
+            console.log(JSON.stringify(Errors.UserDoesNotExist));
             callback(Errors.raise(Errors.UserDoesNotExist), null);
             return;
         }
