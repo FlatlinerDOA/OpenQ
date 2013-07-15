@@ -18,7 +18,6 @@
   <ItemGroup>
     <Content Include="app.css" />
     <TypeScriptCompile Include="openq.ts" />
-    <TypeScriptCompile Include="loadtests.ts" />
     <TypeScriptCompile Include="content\common\Navigation.ts" />
     <Content Include="content\common\Navigation.js">
       <DependentUpon>Navigation.ts</DependentUpon>
@@ -80,9 +79,6 @@
       <DependentUpon>typography.less</DependentUpon>
     </Content>
     <Content Include="gruntfile.js" />
-    <Content Include="loadtests.js">
-      <DependentUpon>loadtests.ts</DependentUpon>
-    </Content>
     <TypeScriptCompile Include="loadtests\sendingmessages.ts" />
     <Content Include="loadtests\sendingmessages.js">
       <DependentUpon>sendingmessages.ts</DependentUpon>
