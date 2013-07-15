@@ -93,11 +93,16 @@
     <Content Include="repository-memory.js">
       <DependentUpon>repository-memory.ts</DependentUpon>
     </Content>
+    <TypeScriptCompile Include="repository-redis.ts" />
+    <Content Include="repository-redis.js">
+      <DependentUpon>repository-redis.ts</DependentUpon>
+    </Content>
     <Content Include="signup.html" />
     <TypeScriptCompile Include="spec\repository-memory-spec.ts" />
     <TypeScriptCompile Include="spec\openq-service-spec.ts" />
     <TypeScriptCompile Include="spec\openq-queue-spec.ts" />
     <TypeScriptCompile Include="spec\dispatchpublisher-spec.ts" />
+    <TypeScriptCompile Include="spec\repository-redis-spec.ts" />
     <Content Include="spec\dispatchpublisher-spec.js">
       <DependentUpon>dispatchpublisher-spec.ts</DependentUpon>
     </Content>
@@ -114,6 +119,9 @@
     <Content Include="spec\repository-memory-spec.js">
       <DependentUpon>repository-memory-spec.ts</DependentUpon>
     </Content>
+    <Content Include="spec\repository-redis-spec.js">
+      <DependentUpon>repository-redis-spec.ts</DependentUpon>
+    </Content>
     <Content Include="tests.js">
       <DependentUpon>tests.ts</DependentUpon>
     </Content>
@@ -123,6 +131,7 @@
     <Content Include="types\jasmine.d.ts" />
     <TypeScriptCompile Include="types\knockout.d.ts" />
     <TypeScriptCompile Include="types\jquery.d.ts" />
+    <Content Include="types\node_redis.d.ts" />
     <Content Include="types\rx.d.ts" />
     <TypeScriptCompile Include="types\common.d.ts" />
     <Content Include="app.js">

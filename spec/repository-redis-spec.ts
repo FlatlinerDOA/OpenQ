@@ -1,11 +1,11 @@
 /// <reference path="../types/common.d.ts" />
 /// <reference path="../types/jasmine.d.ts" />
 
-var memoryRepo = require('../repository-memory');
+var redisRepo = require('../repository-redis');
 
+describe('When creating a new Redis repo, ', () => {
+    var repo: OpenQ.IRepository = redisRepo.createRepository('tablename');
 
-describe('When creating a new memory repo, ', () => {
-    var repo: OpenQ.IRepository = memoryRepo.createRepository('tablename');
     var Qid = {
         ExpectAny: -1,
         FromFirst: -1,
@@ -150,8 +150,8 @@ describe('When creating a new memory repo, ', () => {
     });
 });
 
-describe('When creating a new memory repo, ', () => {
-    var repo: OpenQ.IRepository = memoryRepo.createRepository('tablename');
+describe('When creating a new Redis repo, ', () => {
+    var repo: OpenQ.IRepository = redisRepo.createRepository('tablename');
     var Qid = {
         ExpectAny: -1,
         FromFirst: -1,

@@ -1,7 +1,8 @@
-var memoryRepo = require('../repository-memory');
+var redisRepo = require('../repository-redis');
 
-describe('When creating a new memory repo, ', function () {
-    var repo = memoryRepo.createRepository('tablename');
+describe('When creating a new Redis repo, ', function () {
+    var repo = redisRepo.createRepository('tablename');
+
     var Qid = {
         ExpectAny: -1,
         FromFirst: -1,
@@ -157,8 +158,8 @@ describe('When creating a new memory repo, ', function () {
     });
 });
 
-describe('When creating a new memory repo, ', function () {
-    var repo = memoryRepo.createRepository('tablename');
+describe('When creating a new Redis repo, ', function () {
+    var repo = redisRepo.createRepository('tablename');
     var Qid = {
         ExpectAny: -1,
         FromFirst: -1,

@@ -3,6 +3,10 @@
     grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks('grunt-contrib-connect');
     grunt.loadNpmTasks('grunt-open');
+    grunt.registerTask('tests', 'Runs all unit tests in the given folder', function () {
+        grunt.task.requires('typescript:base');
+        grunt.log.writeln('TODO... get tests to run...');
+    });
 
     grunt.initConfig({
         pkg: grunt.file.readJSON('package.json'),
@@ -23,9 +27,12 @@
                 }
             }
         },
+        tests: {
+            path: 'spec'
+        },
         watch: {
             files: '**/*.ts',
-            tasks: ['typescript']
+            tasks: ['typescript','tests']
         },
         open: {
             dev: {
@@ -34,5 +41,5 @@
         }
     });
 
-    grunt.registerTask('default', ['typescript:base', 'watch']);
+       grunt.registerTask('default', ['typescript:base', 'watch']);
 }
