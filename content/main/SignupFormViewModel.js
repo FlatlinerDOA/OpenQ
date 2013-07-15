@@ -51,7 +51,17 @@ var SignupFormViewModel = (function () {
         });
     }
     SignupFormViewModel.prototype.create = function () {
-        console.log('creating account...');
+        var payload = ko.toJSON({ username: this.username(), password: this.password() });
+        $.ajax('api/signup', {
+            data: payload,
+            type: 'POST',
+            accept: 'text/html',
+            contentType: 'application/json'
+        }).fail(function () {
+        }).done(function () {
+            var form = new HomeViewModel();
+            Navigation.show(form);
+        });
     };
     return SignupFormViewModel;
 })();

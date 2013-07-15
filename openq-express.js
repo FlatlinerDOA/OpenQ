@@ -16,7 +16,6 @@ var OpenQExpressServer = (function () {
     function OpenQExpressServer() {
         this.instanceId = process.env.COMPUTERNAME + ':' + process.pid;
         this.service = openq.createService(memoryRepo.createRepository);
-
         this.intializeWebServer();
         this.initializePublishers();
     }
@@ -29,7 +28,7 @@ var OpenQExpressServer = (function () {
         this.app = express();
         this.app.use(express.bodyParser());
         this.app.use('/', express.static(__dirname + '/content'));
-        this.app.post('/api/signup', this.signup);
+        this.app.post('/api/signup', this.signup.bind(this));
         this.app.get('/api/:username/:queue', this.getMessages);
         this.app.post('/api/:username/:queue', this.sendMessage);
     };
@@ -49,22 +48,36 @@ var OpenQExpressServer = (function () {
             this.failed(error, res);
             return;
         }
-
         this.success(res);
     };
 
     OpenQExpressServer.prototype.failed = function (error, res) {
         error.type = "urn:openq/failed";
+        res.status(error.status);
         res.format({
-            html: '<html><body><h1>Uh oh!</h1><pre>' + error + '</pre></body></html>',
-            json: error
+            text: function () {
+                return res.send('error');
+            },
+            html: function () {
+                return res.send('<html><body><h1>Uh oh!</h1><pre>' + error + '</pre></body></html>');
+            },
+            json: function () {
+                return res.send(error);
+            }
         });
     };
 
     OpenQExpressServer.prototype.success = function (res) {
         res.format({
-            html: '<html><body><h1>Well done!</h1></body></html>',
-            json: { "type": "urn:openq/success" }
+            text: function () {
+                return res.send('Well Done!');
+            },
+            html: function () {
+                return res.send('<html><body><h1>Well done!</h1></body></html>');
+            },
+            json: function () {
+                return res.send({ "type": "urn:openq/success" });
+            }
         });
     };
 

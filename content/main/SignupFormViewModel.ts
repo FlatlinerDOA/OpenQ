@@ -1,3 +1,6 @@
+/// <reference path="HomeViewModel.ts" />
+/// <reference path="../../types/jquery.d.ts" />
+/// <reference path="../common/Lib.ts" />
 /// <reference path="../../types/client.d.ts" />
 class SignupFormViewModel implements IPageViewModel {
     template = 'SignupFormView';
@@ -58,6 +61,20 @@ class SignupFormViewModel implements IPageViewModel {
     }
 
     create() {
-        console.log('creating account...');
+        var payload = ko.toJSON({ username: this.username(), password: this.password() });
+        $.ajax('api/signup',
+            {
+                data: payload,
+                type: 'POST',
+                accept: 'text/html',
+                contentType: 'application/json'
+            })
+            .fail(() => {
+                // todo: set up a global front end error handler?
+            })
+            .done(() => {
+                var form = new HomeViewModel();
+                Navigation.show(form);
+            }); 
     }
 }

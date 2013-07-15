@@ -1,5 +1,5 @@
 /// <reference path="../../types/client.d.ts" />
-/// <reference path="../common/Navigation.ts"/>
+/// <reference path="../common/Lib.ts" />
 /// <reference path="SignupFormViewModel.ts"/>
 
 class HomeViewModel implements IPageViewModel {

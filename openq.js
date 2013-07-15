@@ -12,12 +12,17 @@ exports.MessageTypes = {
 };
 
 exports.Errors = {
-    "UserAlreadyExists": "User already exists",
-    "SubscriptionNotFound": "Subscription not found",
-    "UserDoesNotExist": "User does not exist",
-    "InvalidSubscriberOrToken": "Invalid subscriber or token",
-    raise: function (name) {
-        return { type: exports.MessageTypes.failed, message: exports.Errors[name], name: name };
+    "UserAlreadyExists": { name: "UserAlreadyExists", message: "User already exists", status: 409 },
+    "SubscriptionNotFound": { name: "SubscriptionNotFound", message: "Subscription not found", status: 400 },
+    "UserDoesNotExist": { name: "UserDoesNotExist", message: "User does not exist", status: 400 },
+    "InvalidSubscriberOrToken": { name: "InvalidSubscriberOrToken", message: "Invalid subscriber or token", status: 400 },
+    raise: function (error) {
+        return {
+            type: exports.MessageTypes.failed,
+            message: error.message,
+            status: error.status,
+            name: error.name
+        };
     }
 };
 
@@ -51,6 +56,7 @@ var TableNames = {
 var Service = (function () {
     function Service(repositoryFactory) {
         this.repositoryFactory = repositoryFactory;
+        this.users = [];
     }
     Service.prototype.start = function (callback) {
         this.usersTable = this.repositoryFactory(TableNames.users);
@@ -77,6 +83,8 @@ var Service = (function () {
 
     Service.prototype.getUser = function (username, token, callback) {
         if (!this.users[username]) {
+            console.log(exports.Errors.UserDoesNotExist);
+            console.log(JSON.stringify(exports.Errors.UserDoesNotExist));
             callback(exports.Errors.raise(exports.Errors.UserDoesNotExist), null);
             return;
         }
