@@ -10,6 +10,7 @@ export function createRepository(tableName: string): OpenQ.IRepository {
     if (!redisClient) {
         redisClient = _redis.createClient();
     }
+
     return new RedisRepository(tableName, redisClient);
 }
 

@@ -5,6 +5,7 @@ function createRepository(tableName) {
     if (!redisClient) {
         redisClient = _redis.createClient();
     }
+
     return new RedisRepository(tableName, redisClient);
 }
 exports.createRepository = createRepository;

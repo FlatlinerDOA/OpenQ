@@ -18,42 +18,74 @@ describe('When creating a new Redis repo, ', function () {
     });
 
     describe('When reading an empty repository, ', function () {
+        var error, completed;
         var messages;
-        repo.read('type', Qid.FromFirst, 1, function (err, results) {
-            messages = results;
+
+        runs(function () {
+            repo.read('type', Qid.FromFirst, 1, function (err, results) {
+                error = err;
+                messages = results;
+            });
         });
 
         it('then the result is an empty array', function () {
-            expect(messages).not.toBeNull();
-            expect(messages.length).toBe(0);
+            waitsFor(function () {
+                return error || messages;
+            }, "Failed to read", 500);
+
+            runs(function () {
+                expect(messages).not.toBeNull();
+                expect(messages.length).toBe(0);
+            });
         });
     });
 
     describe('When writing a new message with expected qid of -1 (any), ', function () {
-        var newMessage = {
-            type: 'urn:test',
-            messageNumber: 1
-        };
+        var error, completed;
 
-        var error;
-        repo.write(newMessage.type, newMessage, Qid.ExpectAny, function (err) {
-            error = err;
+        runs(function () {
+            var newMessage = {
+                type: 'urn:test',
+                messageNumber: 1
+            };
+
+            repo.write(newMessage.type, newMessage, Qid.ExpectAny, function (err) {
+                error = err;
+                completed = true;
+            });
         });
 
         it('then no error is raised', function () {
-            return expect(error).toBeNull();
+            waitsFor(function () {
+                return error || completed;
+            }, "Failed to write a new message", 500);
+
+            runs(function () {
+                expect(error).toBeNull();
+            });
         });
 
         describe('When reading the first message of the correct type, ', function () {
+            var error;
+
             var readMessages;
 
-            repo.read('urn:test', Qid.FromFirst, 1, function (err, results) {
-                readMessages = results;
+            runs(function () {
+                repo.read('urn:test', Qid.FromFirst, 1, function (err, results) {
+                    error = err;
+                    readMessages = results;
+                });
             });
 
             it('then one message is read', function () {
-                expect(readMessages).not.toBeNull();
-                expect(readMessages.length).toBe(1);
+                waitsFor(function () {
+                    return error || completed;
+                }, "Failed to write a new message", 500);
+
+                runs(function () {
+                    expect(readMessages).not.toBeNull();
+                    expect(readMessages.length).toBe(1);
+                });
             });
 
             it('then the first message is the previously written message', function () {

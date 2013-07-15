@@ -18,40 +18,68 @@ describe('When creating a new Redis repo, ', () => {
 
     describe('When reading an empty repository, ', () =>
     {
+        var error, completed;
         var messages: OpenQ.IMessage[];
-        repo.read('type', Qid.FromFirst, 1, (err, results) => {
-            messages = results;
+        
+        runs(() => {
+            repo.read('type', Qid.FromFirst, 1, (err, results) => {
+                error = err;
+                messages = results;
+            });
         });
 
         it('then the result is an empty array', () => {
-            expect(messages).not.toBeNull();
-            expect(messages.length).toBe(0);
+            waitsFor(() => error || messages, "Failed to read", 500);
+
+            runs(() => {
+                expect(messages).not.toBeNull();
+                expect(messages.length).toBe(0);
+            });
         });
     })
 
     describe('When writing a new message with expected qid of -1 (any), ', () => {
-        var newMessage: OpenQ.IMessage = {
-            type: 'urn:test',
-            messageNumber: 1
-        }
+        var error, completed;
 
-        var error;
-        repo.write(newMessage.type, newMessage, Qid.ExpectAny, err => {
-            error = err;
-        })
+        runs(() => {
+            var newMessage: OpenQ.IMessage = {
+                type: 'urn:test',
+                messageNumber: 1
+            }
 
-        it('then no error is raised', () => expect(error).toBeNull());
+            repo.write(newMessage.type, newMessage, Qid.ExpectAny, err => {
+                error = err;
+                completed = true;
+            });
+        });
+
+        it('then no error is raised', () => {
+            waitsFor(() => error || completed, "Failed to write a new message", 500);
+
+            runs(() => {
+                expect(error).toBeNull();
+            });
+        });
 
         describe('When reading the first message of the correct type, ', () => {
+            var error;
+
             var readMessages: OpenQ.IMessage[];
 
-            repo.read('urn:test', Qid.FromFirst, 1, (err, results) => {
-                readMessages = results;
+            runs(() => {
+                repo.read('urn:test', Qid.FromFirst, 1, (err, results) => {
+                    error = err;
+                    readMessages = results;
+                });
             });
 
             it('then one message is read', () => {
-                expect(readMessages).not.toBeNull();
-                expect(readMessages.length).toBe(1);
+                waitsFor(() => error || completed, "Failed to write a new message", 500);
+
+                runs(() => {
+                    expect(readMessages).not.toBeNull();
+                    expect(readMessages.length).toBe(1);
+                });
             });
 
             it('then the first message is the previously written message', () => {
