@@ -36,6 +36,9 @@ class SignupFormViewModel implements IPageViewModel {
             return 2;
         });
 
+        this.username.subscribe(() => { this.resetError(); }); 
+        this.password.subscribe(() => { this.resetError(); });
+
         this.passwordStrengthLabel = ko.computed(() => {
             if (this.passwordStrength() === 2) {
                 return "Yeah! Alright now we're talking secure!";
@@ -61,7 +64,17 @@ class SignupFormViewModel implements IPageViewModel {
         });
     }
 
+    resetError()
+    {
+        this.errorText('');
+    }
+
     create() {
+        if (!this.username().trim() || !this.password().trim()) {
+            this.errorText('Please enter a username and password');
+            return;
+        }
+
         if (this.passwordStrength() < 2) return;
         var payload = ko.toJSON({ username: this.username(), password: this.password() });
         $.ajax('api/signup',

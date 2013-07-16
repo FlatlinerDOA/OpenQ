@@ -27,6 +27,13 @@ var SignupFormViewModel = (function () {
             return 2;
         });
 
+        this.username.subscribe(function () {
+            _this.resetError();
+        });
+        this.password.subscribe(function () {
+            _this.resetError();
+        });
+
         this.passwordStrengthLabel = ko.computed(function () {
             if (_this.passwordStrength() === 2) {
                 return "Yeah! Alright now we're talking secure!";
@@ -51,8 +58,17 @@ var SignupFormViewModel = (function () {
             return "label important";
         });
     }
+    SignupFormViewModel.prototype.resetError = function () {
+        this.errorText('');
+    };
+
     SignupFormViewModel.prototype.create = function () {
         var _this = this;
+        if (!this.username().trim() || !this.password().trim()) {
+            this.errorText('Please enter a username and password');
+            return;
+        }
+
         if (this.passwordStrength() < 2)
             return;
         var payload = ko.toJSON({ username: this.username(), password: this.password() });
