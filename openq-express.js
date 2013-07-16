@@ -56,10 +56,10 @@ var OpenQExpressServer = (function () {
         res.status(error.status);
         res.format({
             text: function () {
-                return res.send('error');
+                return res.send(error.message);
             },
             html: function () {
-                return res.send('<html><body><h1>Uh oh!</h1><pre>' + error + '</pre></body></html>');
+                return res.send('<html><body><h1>Uh oh!</h1><pre>' + error.message + '</pre></body></html>');
             },
             json: function () {
                 return res.send(error);

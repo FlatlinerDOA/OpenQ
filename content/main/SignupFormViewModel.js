@@ -6,6 +6,7 @@ var SignupFormViewModel = (function () {
         this.username = ko.observable('');
         this.password = ko.observable('');
         this.isUsernameAvailable = ko.observable(false);
+        this.errorText = ko.observable('');
         this.showAvailableIndicator = ko.computed(function () {
             return _this.username() != '';
         });
@@ -51,14 +52,19 @@ var SignupFormViewModel = (function () {
         });
     }
     SignupFormViewModel.prototype.create = function () {
+        var _this = this;
+        if (this.passwordStrength() < 2)
+            return;
         var payload = ko.toJSON({ username: this.username(), password: this.password() });
         $.ajax('api/signup', {
             data: payload,
             type: 'POST',
             accept: 'text/html',
             contentType: 'application/json'
-        }).fail(function () {
+        }).fail(function (e) {
+            _this.errorText(e.responseText);
         }).done(function () {
+            _this.errorText('');
             var form = new HomeViewModel();
             Navigation.show(form);
         });

@@ -13,6 +13,7 @@ class SignupFormViewModel implements IPageViewModel {
     passwordStrength: KnockoutComputed<number>;
     passwordStrengthLabel: KnockoutComputed<string>;
     passwordStrengthClass: KnockoutComputed<string>;
+    errorText = ko.observable('');
 
     constructor() {
         this.showAvailableIndicator = ko.computed(() => {
@@ -61,6 +62,7 @@ class SignupFormViewModel implements IPageViewModel {
     }
 
     create() {
+        if (this.passwordStrength() < 2) return;
         var payload = ko.toJSON({ username: this.username(), password: this.password() });
         $.ajax('api/signup',
             {
@@ -69,10 +71,12 @@ class SignupFormViewModel implements IPageViewModel {
                 accept: 'text/html',
                 contentType: 'application/json'
             })
-            .fail(() => {
+            .fail((e) => {
+                this.errorText(e.responseText);
                 // todo: set up a global front end error handler?
             })
             .done(() => {
+                this.errorText('');
                 var form = new HomeViewModel();
                 Navigation.show(form);
             }); 
