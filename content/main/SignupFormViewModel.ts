@@ -13,6 +13,7 @@ class SignupFormViewModel implements IPageViewModel {
     passwordStrength: KnockoutComputed<number>;
     passwordStrengthLabel: KnockoutComputed<string>;
     passwordStrengthClass: KnockoutComputed<string>;
+    errorText = ko.observable('');
 
     constructor() {
         this.showAvailableIndicator = ko.computed(() => {
@@ -34,6 +35,9 @@ class SignupFormViewModel implements IPageViewModel {
 
             return 2;
         });
+
+        this.username.subscribe(() => { this.resetError(); }); 
+        this.password.subscribe(() => { this.resetError(); });
 
         this.passwordStrengthLabel = ko.computed(() => {
             if (this.passwordStrength() === 2) {
@@ -60,7 +64,18 @@ class SignupFormViewModel implements IPageViewModel {
         });
     }
 
+    resetError()
+    {
+        this.errorText('');
+    }
+
     create() {
+        if (!this.username().trim() || !this.password().trim()) {
+            this.errorText('Please enter a username and password');
+            return;
+        }
+
+        if (this.passwordStrength() < 2) return;
         var payload = ko.toJSON({ username: this.username(), password: this.password() });
         $.ajax('api/signup',
             {
@@ -69,10 +84,12 @@ class SignupFormViewModel implements IPageViewModel {
                 accept: 'text/html',
                 contentType: 'application/json'
             })
-            .fail(() => {
+            .fail((e) => {
+                this.errorText(e.responseText);
                 // todo: set up a global front end error handler?
             })
             .done(() => {
+                this.errorText('');
                 var form = new HomeViewModel();
                 Navigation.show(form);
             }); 

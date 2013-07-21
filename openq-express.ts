@@ -58,8 +58,8 @@ export class OpenQExpressServer {
         error.type = "urn:openq/failed";
         res.status(error.status);
         res.format({
-            text: () => res.send('error'),
-            html: () => res.send('<html><body><h1>Uh oh!</h1><pre>' + error + '</pre></body></html>'),
+            text: () => res.send(error.message),
+            html: () => res.send('<html><body><h1>Uh oh!</h1><pre>' + error.message + '</pre></body></html>'),
             json: () => res.send(error)
         });
         

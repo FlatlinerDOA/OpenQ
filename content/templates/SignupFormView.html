@@ -7,11 +7,11 @@
         <div class="page-region">
             <div class="page-region-content span6">
                 <div class="input-control text">
-                    <input type="text" placeholder="Username" data-bind="value: username, valueupdate: 'afterkeydown'" />
+                    <input type="text" placeholder="Username" data-bind="value: username, valueUpdate: 'afterkeydown'" />
                     <button class="btn-clear"></button>
                 </div>
                 <div class="input-control password">
-                    <input type="password" placeholder="Password" data-bind="value: password, valueupdate: 'afterkeydown'" />
+                    <input type="password" placeholder="Password" data-bind="value: password, valueUpdate: 'afterkeydown'" />
                     <button class="btn-reveal"></button>
                 </div>
                 <div data-bind="visible: showPasswordIndicator">
@@ -23,6 +23,10 @@
                         <div class="bar bg-color-yellow" style="width: 30%" data-bind="visible: passwordStrength() >= 1"></div>
                         <div class="bar bg-color-green" style="width: 40%" data-bind="visible: passwordStrength() >= 2"></div>
                     </div>
+                </div>
+                
+                <div class="error" data-bind="visible: errorText">
+                        <p class='label important'>ERROR: <span data-bind="text: errorText"></span></p> 
                 </div>
                 <button class="image-button bg-color-darken fg-color-white" data-bind="click: create"><i class="icon-user"/> Create</button>
             </div>
