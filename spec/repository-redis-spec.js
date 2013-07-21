@@ -76,25 +76,24 @@ describe('When creating a new Redis repo, ', function () {
                     readMessages = results;
                 });
             });
+            waitsFor(function () {
+                return error || completed;
+            }, "Failed to write a new message", 500);
 
-            it('then one message is read', function () {
-                waitsFor(function () {
-                    return error || completed;
-                }, "Failed to write a new message", 500);
-
-                runs(function () {
+            runs(function () {
+                it('then one message is read', function () {
                     expect(readMessages).not.toBeNull();
                     expect(readMessages.length).toBe(1);
                 });
-            });
 
-            it('then the first message is the previously written message', function () {
-                expect(readMessages[0]).not.toBeNull();
-                expect(readMessages[0].type).toBe('urn:test');
-            });
+                it('then the first message is the previously written message', function () {
+                    expect(readMessages[0]).not.toBeNull();
+                    expect(readMessages[0].type).toBe('urn:test');
+                });
 
-            it('then the first message has a qid of zero', function () {
-                return expect(readMessages[0].qid).toBe(0);
+                it('then the first message has a qid of zero', function () {
+                    return expect(readMessages[0].qid).toBe(0);
+                });
             });
         });
 

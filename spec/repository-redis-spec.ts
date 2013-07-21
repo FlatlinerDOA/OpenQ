@@ -72,22 +72,21 @@ describe('When creating a new Redis repo, ', () => {
                     readMessages = results;
                 });
             });
+            waitsFor(() => error || completed, "Failed to write a new message", 500);
 
-            it('then one message is read', () => {
-                waitsFor(() => error || completed, "Failed to write a new message", 500);
-
-                runs(() => {
+            runs(() => {
+                it('then one message is read', () => {
                     expect(readMessages).not.toBeNull();
                     expect(readMessages.length).toBe(1);
                 });
-            });
 
-            it('then the first message is the previously written message', () => {
-                expect(readMessages[0]).not.toBeNull();
-                expect(readMessages[0].type).toBe('urn:test');
-            });
+                it('then the first message is the previously written message', () => {
+                    expect(readMessages[0]).not.toBeNull();
+                    expect(readMessages[0].type).toBe('urn:test');
+                });
 
-            it('then the first message has a qid of zero', () => expect(readMessages[0].qid).toBe(0));
+                it('then the first message has a qid of zero', () => expect(readMessages[0].qid).toBe(0));
+            });
         });
 
         describe('When reading the second message of the correct type, ', () => {
