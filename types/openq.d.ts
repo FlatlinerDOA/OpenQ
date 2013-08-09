@@ -47,8 +47,8 @@ declare module OpenQ {
         token: string;
         messagetypes: string[];
         messagesperminute: number;
-        fromfirstmessage: bool;
-        exclusive: bool;
+        fromfirstmessage: boolean;
+        exclusive: boolean;
     }
 
     export interface IUnsubscribeMessage extends IMessage {
@@ -61,7 +61,7 @@ declare module OpenQ {
         subscribeto: string;
         withtoken: string;
         messagetypes: string[];
-        fromfirstmessage: bool;
+        fromfirstmessage: boolean;
     }
 
     export interface IRepositoryFactory {
@@ -79,7 +79,7 @@ declare module OpenQ {
     }
 
     export interface IPublisher {
-        publish(messages: OpenQ.IMessage[], recipient: string): bool;
+        publish(messages: OpenQ.IMessage[], recipient: string): boolean;
     }
 
     export interface ISubscription {
@@ -87,7 +87,7 @@ declare module OpenQ {
         token: string;
         messageType: string;
         lastReadQid: number;
-        exclusive: bool;
+        exclusive: boolean;
         qid: number;
         messagesperminute: number;
     }
