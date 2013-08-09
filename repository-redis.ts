@@ -24,13 +24,18 @@ class RedisRepository implements OpenQ.IRepository {
     }
 
     read(rangeKey: string, afterQid: number, take: number, callback: (err: Error, results: any[]) => void ) {
-        var q = this.getOrCreateQueue(rangeKey, false);
-        q.read(afterQid, afterQid + take, callback);
+        this.getOrCreateQueue(rangeKey, false, (err, q) => {
+            if (err) {
+                callback(err, null);
+                return;
+            }
+
+            q.read(afterQid, afterQid + take, callback);
+        });
     }
 
     readLast(rangeKey: string, callback: (err: Error, results: any) => void ) {
-        var q = this.getOrCreateQueue(rangeKey, false);
-        this.read(rangeKey, -1, -1, (err, results) => callback(err, results[0]))
+        this.read(rangeKey, -1, -1, (err, results) => callback(err, results[0]));
     }
 
     /** Note this is for Short queues only, as it is limited to 10000 rows max */
@@ -44,41 +49,47 @@ class RedisRepository implements OpenQ.IRepository {
             return;
         }
 
-        var q = this.getOrCreateQueue(rangeKey, true);
-        q.write(record, expectedQid, callback);
-    }
-    
-    deleteTo(rangeKey: string, qid: number, callback: (err: Error) => void ) {
-        var q = this.getOrCreateQueue(rangeKey, false);
-        if (!q) {
-            callback({ message: 'Repository not found', name: 'RepositoryNotFound' });
-            return;
-        }
-
-        q.deleteTo(qid, (err) => {
+        this.getOrCreateQueue(rangeKey, true, (err, q) => {
             if (err) {
                 callback(err);
                 return;
-
-                if (qid === -1) {
-                    delete this.typeQueues[rangeKey];
-                } 
-
-                callback(null);
             }
+            q.write(record, expectedQid, callback);
+        });
+    }
+    
+    deleteTo(rangeKey: string, qid: number, callback: (err: Error) => void ) {
+        this.getOrCreateQueue(rangeKey, false, (err, q) => {
+            if (err || !q) {
+                callback({ message: 'Repository not found', name: 'RepositoryNotFound' });
+                return;
+            }
+
+            q.deleteTo(qid, (err) => {
+                if (err) {
+                    callback(err);
+                    return;
+
+                    if (qid === -1) {
+                        delete this.typeQueues[rangeKey];
+                    }
+
+                    callback(null);
+                }
+            });
         });
     }
 
-    getOrCreateQueue(rangeKey: string, save: boolean): RedisQueue {
+    getOrCreateQueue(rangeKey: string, save: boolean, callback:(err:Error, queue: RedisQueue ) => void):void {
         var q: RedisQueue = this.typeQueues[rangeKey];
         if (!q) {
             q = new RedisQueue(rangeKey, this.client);
             if (save) {
                 this.typeQueues[rangeKey] = q;
             }
-        }
 
-        return q;
+            callback(null, q);
+        }
     }
 }
 

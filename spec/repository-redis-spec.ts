@@ -1,6 +1,5 @@
 /// <reference path="../types/common.d.ts" />
 /// <reference path="../types/jasmine.d.ts" />
-
 var redisRepo = require('../repository-redis');
 
 describe('When creating a new Redis repo, ', () => {

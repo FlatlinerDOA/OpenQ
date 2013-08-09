@@ -51,3 +51,4 @@ describe('When creating a new dispatch publisher, ', function () {
     });
 });
 
+//# sourceMappingURL=dispatchpublisher-spec.js.map

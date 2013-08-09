@@ -17,12 +17,17 @@ var RedisRepository = (function () {
         this.typeQueues = {};
     }
     RedisRepository.prototype.read = function (rangeKey, afterQid, take, callback) {
-        var q = this.getOrCreateQueue(rangeKey, false);
-        q.read(afterQid, afterQid + take, callback);
+        this.getOrCreateQueue(rangeKey, false, function (err, q) {
+            if (err) {
+                callback(err, null);
+                return;
+            }
+
+            q.read(afterQid, afterQid + take, callback);
+        });
     };
 
     RedisRepository.prototype.readLast = function (rangeKey, callback) {
-        var q = this.getOrCreateQueue(rangeKey, false);
         this.read(rangeKey, -1, -1, function (err, results) {
             return callback(err, results[0]);
         });
@@ -38,42 +43,48 @@ var RedisRepository = (function () {
             return;
         }
 
-        var q = this.getOrCreateQueue(rangeKey, true);
-        q.write(record, expectedQid, callback);
+        this.getOrCreateQueue(rangeKey, true, function (err, q) {
+            if (err) {
+                callback(err);
+                return;
+            }
+            q.write(record, expectedQid, callback);
+        });
     };
 
     RedisRepository.prototype.deleteTo = function (rangeKey, qid, callback) {
         var _this = this;
-        var q = this.getOrCreateQueue(rangeKey, false);
-        if (!q) {
-            callback({ message: 'Repository not found', name: 'RepositoryNotFound' });
-            return;
-        }
-
-        q.deleteTo(qid, function (err) {
-            if (err) {
-                callback(err);
+        this.getOrCreateQueue(rangeKey, false, function (err, q) {
+            if (err || !q) {
+                callback({ message: 'Repository not found', name: 'RepositoryNotFound' });
                 return;
-
-                if (qid === -1) {
-                    delete _this.typeQueues[rangeKey];
-                }
-
-                callback(null);
             }
+
+            q.deleteTo(qid, function (err) {
+                if (err) {
+                    callback(err);
+                    return;
+
+                    if (qid === -1) {
+                        delete _this.typeQueues[rangeKey];
+                    }
+
+                    callback(null);
+                }
+            });
         });
     };
 
-    RedisRepository.prototype.getOrCreateQueue = function (rangeKey, save) {
+    RedisRepository.prototype.getOrCreateQueue = function (rangeKey, save, callback) {
         var q = this.typeQueues[rangeKey];
         if (!q) {
             q = new RedisQueue(rangeKey, this.client);
             if (save) {
                 this.typeQueues[rangeKey] = q;
             }
-        }
 
-        return q;
+            callback(null, q);
+        }
     };
     return RedisRepository;
 })();

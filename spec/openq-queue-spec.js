@@ -49,3 +49,4 @@ describe('When creating a new queue, ', function () {
     });
 });
 
+//# sourceMappingURL=openq-queue-spec.js.map
