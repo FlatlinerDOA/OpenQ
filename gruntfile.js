@@ -23,17 +23,19 @@
                 nolib: false,             // true | false (default)
                 comments: false           // true | false (default)
             },
-            all: {
-                src: ['**/*.ts'],
-                options: {
-                    module: 'commonjs',
-                    target: 'es5'
-                }
+            root: {
+                src: ['*.ts']
+            },
+            spec: {
+                src: ['spec/*.ts']
+            },
+            loadtests: {
+                src: ['loadtests/*.ts']
             }
         },
         watch: {
             files: '**/*.ts',
-            tasks: ['ts:all']
+            tasks: ['ts:root','ts:spec']
         },
         open: {
             dev: {
@@ -42,5 +44,5 @@
         }
     });
 
-       grunt.registerTask('default', ['ts:all', 'watch']);
+       grunt.registerTask('default', ['ts:root', 'watch']);
 }

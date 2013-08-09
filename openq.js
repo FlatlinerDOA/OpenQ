@@ -355,3 +355,4 @@ var SocketPublisher = (function () {
 })();
 exports.SocketPublisher = SocketPublisher;
 
+//# sourceMappingURL=openq.js.map

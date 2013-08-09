@@ -1,4 +1,3 @@
-/// <reference path="../node_modules/typescript-require/typings/node.d.ts" />
 /// <reference path="../types/common.d.ts" />
 /// <reference path="../types/jasmine.d.ts" />
 import http = require('http');

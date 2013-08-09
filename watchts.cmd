@@ -1,3 +1,4 @@
 @echo off
-where ".;.\spec;.\loadtests;.\types:*.ts" > ts.txt
+where ".;.\spec;.\loadtests:*.ts" > ts.txt
+echo Watching...
 tsc @ts.txt -removeComments --module commonjs -w

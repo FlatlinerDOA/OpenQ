@@ -11,12 +11,3 @@ C:\ChizDev\OpenQ\spec\openq-service-spec.ts
 C:\ChizDev\OpenQ\spec\repository-memory-spec.ts
 C:\ChizDev\OpenQ\spec\repository-redis-spec.ts
 C:\ChizDev\OpenQ\loadtests\sendingmessages.ts
-C:\ChizDev\OpenQ\types\client.d.ts
-C:\ChizDev\OpenQ\types\common.d.ts
-C:\ChizDev\OpenQ\types\express.d.ts
-C:\ChizDev\OpenQ\types\jasmine.d.ts
-C:\ChizDev\OpenQ\types\jquery.d.ts
-C:\ChizDev\OpenQ\types\knockout.d.ts
-C:\ChizDev\OpenQ\types\node_redis.d.ts
-C:\ChizDev\OpenQ\types\openq.d.ts
-C:\ChizDev\OpenQ\types\rx.d.ts
