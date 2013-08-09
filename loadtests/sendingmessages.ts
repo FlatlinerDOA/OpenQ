@@ -1,7 +1,7 @@
 /// <reference path="../node_modules/typescript-require/typings/node.d.ts" />
 /// <reference path="../types/common.d.ts" />
 /// <reference path="../types/jasmine.d.ts" />
-/// <reference path="../openq.ts" />
+import http = require('http');
 
 class TestResult {
     success = false;
