@@ -1,13 +1,9 @@
 ﻿module.exports = function (grunt) {
-    grunt.loadNpmTasks('grunt-typescript');
+    grunt.loadNpmTasks('grunt-ts');
     grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks('grunt-contrib-connect');
     grunt.loadNpmTasks('grunt-open');
-    grunt.registerTask('tests', 'Runs all unit tests in the given folder', function () {
-        grunt.task.requires('typescript:base');
-        grunt.log.writeln('TODO... get tests to run...');
-    });
-
+ 
     grunt.initConfig({
         pkg: grunt.file.readJSON('package.json'),
         connect: {
@@ -18,21 +14,26 @@
                 }
             }
         },
-        typescript: {
-            base: {
+        ts: {
+            options: {                    // use to override the default options, See : http://gruntjs.com/configuring-tasks#options
+                target: 'es5',            // es3 (default) / or es5
+                module: 'commonjs',       // amd , commonjs (default)
+                sourcemap: true,          // true  (default) | false
+                declaration: false,       // true | false  (default)
+                nolib: false,             // true | false (default)
+                comments: false           // true | false (default)
+            },
+            all: {
                 src: ['**/*.ts'],
                 options: {
-                    module: 'requirejs',
+                    module: 'commonjs',
                     target: 'es5'
                 }
             }
         },
-        tests: {
-            path: 'spec'
-        },
         watch: {
             files: '**/*.ts',
-            tasks: ['typescript','tests']
+            tasks: ['ts:all']
         },
         open: {
             dev: {
@@ -41,5 +42,5 @@
         }
     });
 
-       grunt.registerTask('default', ['typescript:base', 'watch']);
+       grunt.registerTask('default', ['ts:all', 'watch']);
 }

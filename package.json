@@ -17,7 +17,9 @@
     "grunt-typescript": "~0.2.1",
     "grunt-contrib-watch": "~0.4.4",
     "grunt-contrib-connect": "~0.3.0",
-    "grunt-open": "~0.2.1"
+    "grunt-open": "~0.2.1",
+    "grunt-ts": "~1.0.1",
+    "typescript-require": "~0.2.2"
   },
   "scripts": {
     "test": "tests.js"

@@ -15,7 +15,8 @@ The ultimate goal of this project is to create an extremely simple but flexible 
 
 ### Development
 1. To make changes to the TypeScript source code it is recommended you install the Grunt command line interface: <pre>npm install grunt-cli -g</pre>
-2. Then to continuously compile changes to your TypeScript files run: <pre>grunt</pre>
+2. Then to continuously compile changes to your TypeScript files 
+   Either run: <pre>grunt</pre> or <pre>watchts.cmd</pre> on Windows.
 
 ## How to Contribute
 
