@@ -174,14 +174,14 @@ interface KnockoutMemoization {
 interface KnockoutVirtualElement {}
 
 interface KnockoutVirtualElements {
-	allowedBindings: { [bindingName: string]: boolean; };
-	emptyNode( e: KnockoutVirtualElement );
-	firstChild( e: KnockoutVirtualElement );
-	insertAfter( container: KnockoutVirtualElement, nodeToInsert: HTMLElement, insertAfter: HTMLElement );
-	nextSibling( e: KnockoutVirtualElement );
-	prepend( e: KnockoutVirtualElement, toInsert: HTMLElement );
-	setDomNodeChildren( e: KnockoutVirtualElement, newChildren: { length: number;[index: number]: HTMLElement; } );
-	childNodes( e: KnockoutVirtualElement ): HTMLElement[];
+    allowedBindings: { [bindingName: string]: boolean; };
+    emptyNode( e: KnockoutVirtualElement );
+    firstChild( e: KnockoutVirtualElement );
+    insertAfter( container: KnockoutVirtualElement, nodeToInsert: HTMLElement, insertAfter: HTMLElement );
+    nextSibling( e: KnockoutVirtualElement );
+    prepend( e: KnockoutVirtualElement, toInsert: HTMLElement );
+    setDomNodeChildren( e: KnockoutVirtualElement, newChildren: { length: number;[index: number]: HTMLElement; } );
+    childNodes( e: KnockoutVirtualElement ): HTMLElement[];
 }
 
 interface KnockoutExtenders {
@@ -292,8 +292,6 @@ interface KnockoutUtils {
     //setTextContent(element: any, textContent: string): void; // NOT PART OF THE MINIFIED API SURFACE (ONLY IN knockout-{version}.debug.js) https://github.com/SteveSanderson/knockout/issues/670
 
     setElementName(element: any, name: string): void;
-
-    ensureSelectElementIsRenderedCorrectly(selectElement);
 
     forceRefresh(node: any): void;
 

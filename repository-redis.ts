@@ -9,6 +9,7 @@ var redisClient: redis.RedisClient = null;
 export function createRepository(tableName: string): OpenQ.IRepository {
     if (!redisClient) {
         redisClient = _redis.createClient();
+        // TODO: redisClient.auth("password");
     }
 
     return new RedisRepository(tableName, redisClient);
@@ -68,7 +69,7 @@ class RedisRepository implements OpenQ.IRepository {
         });
     }
 
-    getOrCreateQueue(rangeKey: string, save: bool): RedisQueue {
+    getOrCreateQueue(rangeKey: string, save: boolean): RedisQueue {
         var q: RedisQueue = this.typeQueues[rangeKey];
         if (!q) {
             q = new RedisQueue(rangeKey, this.client);
@@ -82,7 +83,7 @@ class RedisRepository implements OpenQ.IRepository {
 }
 
 class RedisQueue {
-    constructor(public rangeKey: string, private client: any) {
+    constructor(public rangeKey: string, private client: redis.RedisClient) {
     }
 
     getQueueLength(callback: (err: Error, length: number) => void ) {
@@ -123,6 +124,7 @@ class RedisQueue {
     }
 
     read(start: number, stop: number, callback: (err: Error, results: any[]) => void ) {
+        //this.client.hgetall("xyzxxyz", (err: Error, results: any) => {
         this.client.lrange(this.rangeKey, start, stop, (err: Error, results: any) => {
             if (err) {
                 callback(err, null);
@@ -137,7 +139,7 @@ class RedisQueue {
                 return;
             }
 
-            callback(null, result);
+            callback(null, result || []);
         });
         ////var fromQid = afterQid + 1;
         ////if (take === -1) {

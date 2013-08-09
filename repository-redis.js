@@ -135,7 +135,7 @@ var RedisQueue = (function () {
                 return;
             }
 
-            callback(null, result);
+            callback(null, result || []);
         });
     };
     return RedisQueue;

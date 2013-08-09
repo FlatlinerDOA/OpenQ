@@ -1,8 +1,8 @@
 /// <reference path="../types/common.d.ts" />
 /// <reference path="../types/jasmine.d.ts" />
 
-import openq = module('../openq');
-import memoryRepo = module('../repository-memory');
+import openq = require('../openq');
+import memoryRepo = require('../repository-memory');
 
 describe('When creating a new queue, ', () => {
     var q = new openq.Queue('userName', 'inbox', memoryRepo.createRepository, []);

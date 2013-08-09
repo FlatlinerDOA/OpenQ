@@ -1,7 +1,7 @@
 /// <reference path="../types/common.d.ts" />
 /// <reference path="../types/jasmine.d.ts" />
 
-import openq = module('../openq');
+import openq = require('../openq');
 
 describe('When creating a new dispatch publisher, ', () => {
     var d = new openq.DispatchPublisher();

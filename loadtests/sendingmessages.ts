@@ -2,7 +2,6 @@
 /// <reference path="../types/common.d.ts" />
 /// <reference path="../types/jasmine.d.ts" />
 /// <reference path="../openq.ts" />
-import http = module("http");
 
 class TestResult {
     success = false;

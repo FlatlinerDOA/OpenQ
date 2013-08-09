@@ -297,7 +297,7 @@ export class DispatchPublisher implements OpenQ.IPublisher {
     messageHandlers = {
     };
 
-    addHandler(type: string, handler: (message: OpenQ.IMessage, subscriber: string) => bool): void
+    addHandler(type: string, handler: (message: OpenQ.IMessage, subscriber: string) => boolean): void
     {
         var handlers = this.messageHandlers[type]
         if (!handlers) {
@@ -308,7 +308,7 @@ export class DispatchPublisher implements OpenQ.IPublisher {
         handlers.push(handler);
     }
 
-    publish(messages: OpenQ.IMessage[], subscriber: string): bool {
+    publish(messages: OpenQ.IMessage[], subscriber: string): boolean {
         for (var m = 0; m < messages.length; m++) {
             var message = messages[m];
             var handlers = this.messageHandlers[message.type];

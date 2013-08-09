@@ -62,7 +62,7 @@ class MemoryRepository implements OpenQ.IRepository {
         callback(null);
     }
 
-    getOrCreateQueue(rangeKey: string, save: bool): MemoryQueue {
+    getOrCreateQueue(rangeKey: string, save: boolean): MemoryQueue {
         var q: MemoryQueue = this.typeQueues[rangeKey];
         if (!q) {
             q = new MemoryQueue(rangeKey);
@@ -80,7 +80,7 @@ class MemoryQueue {
     constructor(public rangeKey: string) {
     }
 
-    write(message: OpenQ.IMessage, expectedQid: number, callback: (err: Error) => void ):bool {
+    write(message: OpenQ.IMessage, expectedQid: number, callback: (err: Error) => void ):boolean {
         if (expectedQid !== -1) {
             if (this.messages.length !== expectedQid) {
                 var err = { message: 'Expected next qid to be ' + expectedQid + ' but was ' + this.messages.length, name: 'ExpectedQidViolation' };

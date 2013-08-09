@@ -13,31 +13,30 @@ describe('When creating a new Redis repo, ', () => {
     };
 
     it('then a non-null instance is returned', () => expect(repo).not.toBeNull());
-
     it('then the repository has the correct table name', () => expect(repo.tableName).toBe('tablename'));
 
     describe('When reading an empty repository, ', () =>
     {
-        var error, completed;
-        var messages: OpenQ.IMessage[];
-        
-        runs(() => {
-            repo.read('type', Qid.FromFirst, 1, (err, results) => {
-                error = err;
-                messages = results;
-            });
-        });
-
         it('then the result is an empty array', () => {
-            waitsFor(() => error || messages, "Failed to read", 500);
+            var error = null;
+            var messages: OpenQ.IMessage[] = null;
+            runs(() => {
+                repo.read('type', -1, 1, (err, results) => {
+                    error = err ? "Error: " + err : null;
+                    messages = results;
+                });
+            });
+
+            waitsFor(() => error || messages, "Failed to read", 5000);
 
             runs(() => {
+                expect(error).toBeNull();
                 expect(messages).not.toBeNull();
                 expect(messages.length).toBe(0);
             });
         });
     })
-
+/*
     describe('When writing a new message with expected qid of -1 (any), ', () => {
         var error, completed;
 
@@ -174,9 +173,9 @@ describe('When creating a new Redis repo, ', () => {
                 expect(readMessages.length).toBe(0);
             });
         });
-    });
+    });*/
 });
-
+/*
 describe('When creating a new Redis repo, ', () => {
     var repo: OpenQ.IRepository = redisRepo.createRepository('tablename');
     var Qid = {
@@ -213,3 +212,4 @@ describe('When creating a new Redis repo, ', () => {
         });
     });
 });
+*/

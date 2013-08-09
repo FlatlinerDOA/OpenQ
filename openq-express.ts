@@ -1,4 +1,5 @@
 /// <reference path="types/common.d.ts" />
+
 var openq = require("./openq");
 var memoryRepo = require("./repository-memory");
 var express = require("express");

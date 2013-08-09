@@ -1,5 +1,3 @@
-var http = require("http");
-
 var TestResult = (function () {
     function TestResult() {
         this.success = false;
@@ -51,4 +49,3 @@ describe('When setting up a user with an inbox, ', function () {
         }
     });
 });
-
