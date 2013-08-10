@@ -1,9 +1,23 @@
-﻿module.exports = function (grunt) {
+﻿var child_process = require('child_process');
+module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-ts');
     grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks('grunt-contrib-connect');
     grunt.loadNpmTasks('grunt-open');
- 
+    grunt.registerTask('tests', 'Spawns a child process that runs the test.js file', function (args) {
+        var done = this.async();
+        var testProc = child_process.fork('tests.js');
+        testProc.on('exit', function() {
+            grunt.log.writeln('All done!');
+            done();
+        });
+
+        setTimeout(function () {
+            //testProc.kill();
+            grunt.log.writeln('Test process terminated. Took too long to exit!');
+            done();
+        }, 5000);
+    });
     grunt.initConfig({
         pkg: grunt.file.readJSON('package.json'),
         connect: {
@@ -33,16 +47,16 @@
                 src: ['loadtests/*.ts']
             }
         },
-        watch: {
-            files: '**/*.ts',
-            tasks: ['ts:root','ts:spec']
-        },
         open: {
             dev: {
                 path: 'http://localhost:8000/index.html'
             }
+        },
+        watch: {
+            files: '**/*.ts',
+            tasks: ['ts:root', 'ts:spec', 'tests']
         }
     });
 
-       grunt.registerTask('default', ['ts:root', 'watch']);
+       grunt.registerTask('default', ['ts:root', 'tests', 'watch']);
 }

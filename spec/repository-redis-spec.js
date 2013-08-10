@@ -38,5 +38,31 @@ describe('When creating a new Redis repo, ', function () {
             });
         });
     });
+
+    describe('When writing a new message with expected qid of -1 (any), ', function () {
+        var error, completed;
+
+        runs(function () {
+            var newMessage = {
+                type: 'urn:test',
+                messageNumber: 1
+            };
+
+            repo.write(newMessage.type, newMessage, Qid.ExpectAny, function (err) {
+                error = err;
+                completed = true;
+            });
+        });
+
+        it('then no error is raised', function () {
+            waitsFor(function () {
+                return error || completed;
+            }, "Failed to write a new message", 500);
+
+            runs(function () {
+                expect(error).toBeNull();
+            });
+        });
+    });
 });
 //# sourceMappingURL=repository-redis-spec.js.map
