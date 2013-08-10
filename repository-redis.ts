@@ -3,12 +3,17 @@
 
 /// <reference path="types/common.d.ts" />
 /// <reference path="types/node_redis.d.ts" />
-var _redis = require("redis");
+var redis = require("redis");
 var redisClient: redis.RedisClient = null;
 
 export function createRepository(tableName: string): OpenQ.IRepository {
     if (!redisClient) {
-        redisClient = _redis.createClient();
+        var port = 6379;
+        var host = "localhost";
+        var options: redis.RedisOptions = {
+            enable_offline_queue: false
+        };
+        redisClient = redis.createClient(port, host, {});
         // TODO: redisClient.auth("password");
     }
 
@@ -97,6 +102,9 @@ class RedisQueue {
     constructor(public rangeKey: string, private client: redis.RedisClient) {
     }
 
+    create(callback:(err: Error) => void) {
+    }
+
     getQueueLength(callback: (err: Error, length: number) => void ) {
         this.client.llen(this.rangeKey, callback);
     } 
@@ -118,7 +126,7 @@ class RedisQueue {
 
             message.qid = queueLength;
             
-            this.client.rpush(this.rangeKey, JSON.stringify(message), (err:Error, newQueueLength:number) => {
+            this.client.rpush(this.rangeKey, [message], (err:Error, newQueueLength:number) => {
                 if (err) {
                     callback(err);
                     return;
@@ -142,12 +150,14 @@ class RedisQueue {
                 return;
             }
 
-            var result;
-            try {
-                result = JSON.parse(results);
-            } catch (parseError) {
-                callback(parseError, null);
-                return;
+            var result = null;
+            if (results !== null) {
+                try {
+                    result = results; //JSON.parse(results);
+                } catch (parseError) {
+                    callback(parseError, null);
+                    return;
+                }
             }
 
             callback(null, result || []);

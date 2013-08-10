@@ -1,9 +1,14 @@
-var _redis = require("redis");
+var redis = require("redis");
 var redisClient = null;
 
 function createRepository(tableName) {
     if (!redisClient) {
-        redisClient = _redis.createClient();
+        var port = 6379;
+        var host = "localhost";
+        var options = {
+            enable_offline_queue: false
+        };
+        redisClient = redis.createClient(port, host, {});
     }
 
     return new RedisRepository(tableName, redisClient);
@@ -94,6 +99,9 @@ var RedisQueue = (function () {
         this.rangeKey = rangeKey;
         this.client = client;
     }
+    RedisQueue.prototype.create = function (callback) {
+    };
+
     RedisQueue.prototype.getQueueLength = function (callback) {
         this.client.llen(this.rangeKey, callback);
     };
@@ -116,7 +124,7 @@ var RedisQueue = (function () {
 
             message.qid = queueLength;
 
-            _this.client.rpush(_this.rangeKey, JSON.stringify(message), function (err, newQueueLength) {
+            _this.client.rpush(_this.rangeKey, [message], function (err, newQueueLength) {
                 if (err) {
                     callback(err);
                     return;
@@ -138,12 +146,14 @@ var RedisQueue = (function () {
                 return;
             }
 
-            var result;
-            try  {
-                result = JSON.parse(results);
-            } catch (parseError) {
-                callback(parseError, null);
-                return;
+            var result = null;
+            if (results !== null) {
+                try  {
+                    result = results;
+                } catch (parseError) {
+                    callback(parseError, null);
+                    return;
+                }
             }
 
             callback(null, result || []);
