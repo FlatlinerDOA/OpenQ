@@ -19,6 +19,7 @@ describe('When creating a new Redis repo, ', function () {
     describe('When reading an empty repository, ', function () {
         it('then the result is an empty array', function () {
             var error = null;
+
             var messages = null;
             runs(function () {
                 repo.read('type', -1, 1, function (err, results) {

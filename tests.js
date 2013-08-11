@@ -28,27 +28,20 @@ args.forEach(function (arg) {
     }
 });
 
-console.log('Running all tests in ' + __dirname + '/spec');
-j.executeSpecsInFolder({
-    specFolders: [__dirname + '/spec']
-}, function (runner, log) {
-    if (runner.results().failedCount === 0) {
-        process.exit(0);
-    } else {
-        process.exit(1);
-    }
-}, isVerbose, showColors);
-
-if (runLoadTests) {
-    console.log('Running all tests in ' + __dirname + '/loadtests');
-    j.executeSpecsInFolder({
-        specFolders: [__dirname + '/loadtests']
-    }, function (runner, log) {
+var options = {
+    specFolders: runLoadTests ? [__dirname + '/spec'] : [__dirname + '/spec', __dirname + '/loadtests'],
+    onComplete: function (runner, log) {
         if (runner.results().failedCount === 0) {
             process.exit(0);
         } else {
             process.exit(1);
         }
-    }, isVerbose, showColors);
-}
+    },
+    isVerbose: isVerbose,
+    showColors: showColors,
+    includeStackTrace: true
+};
+
+console.log('Running all tests in ' + __dirname + '/spec');
+j.executeSpecsInFolder(options);
 //# sourceMappingURL=tests.js.map

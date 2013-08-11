@@ -4,19 +4,14 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks('grunt-contrib-connect');
     grunt.loadNpmTasks('grunt-open');
-    grunt.registerTask('tests', 'Spawns a child process that runs the test.js file', function (args) {
+    grunt.registerTask('tests', 'Spawns a child process that runs jasmine-node specs', function (args) {
         var done = this.async();
         var testProc = child_process.fork('tests.js');
         testProc.on('exit', function() {
-            grunt.log.writeln('All done!');
+            grunt.log.writeln('Tests done!');
+            testProc = null;
             done();
         });
-
-        setTimeout(function () {
-            //testProc.kill();
-            grunt.log.writeln('Test process terminated. Took too long to exit!');
-            done();
-        }, 5000);
     });
     grunt.initConfig({
         pkg: grunt.file.readJSON('package.json'),

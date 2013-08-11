@@ -18,6 +18,7 @@ describe('When creating a new Redis repo, ', () => {
     {
         it('then the result is an empty array', () => {
             var error = null;
+            
             var messages: OpenQ.IMessage[] = null;
             runs(() => {
                 repo.read('type', -1, 1, (err, results) => {
