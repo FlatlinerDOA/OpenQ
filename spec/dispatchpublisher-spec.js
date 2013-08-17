@@ -13,7 +13,7 @@ describe('When creating a new dispatch publisher, ', function () {
             return true;
         });
 
-        var result = d.publish([{ type: 'urn:twitter/tweet' }], 'subscriber');
+        var result = d.publish([{ topic: 'DispatchPublisher', type: 'urn:twitter/tweet' }], 'subscriber');
 
         it('then the handler is called once', function () {
             return expect(callCount).toBe(1);

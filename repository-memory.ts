@@ -11,34 +11,27 @@ class MemoryRepository implements OpenQ.IRepository {
     constructor(public tableName: string) {
     }
 
-    read(rangeKey: string, afterQid: number, take: number, callback: (err: Error, results: any[]) => void ) {
-        var q = this.getOrCreateQueue(rangeKey, false);
-        var fromQid = afterQid + 1;
-        if (take === -1) {
-            take = q.messages.length;
-        }
-
-        var finalTake = Math.min(q.messages.length - fromQid, fromQid + take);
-        var m = q.messages.slice(fromQid, finalTake);
-        callback(null, m);
+    read(topic: string, afterQid: number, take: number, callback: (err: Error, results: any[]) => void ) {
+        var q = this.getOrCreateQueue(topic, false);
+        q.read(afterQid, take, callback);
     }
 
-    readLast(rangeKey: string, callback: (err: Error, results: any) => void ) {
-        var q = this.getOrCreateQueue(rangeKey, false);
-        this.read(rangeKey, q.messages.length - 2, 1, (err, results) => callback(err, results[0]))
+    readLast(topic: string, callback: (err: Error, results: any) => void ) {
+        var q = this.getOrCreateQueue(topic, false);
+        this.read(topic, q.messages.length - 2, 1, (err, results) => callback(err, results[0]))
     }
 
-    readAll(rangeKey: string, callback: (err: Error, results: any[]) => void ) {
-        this.read(rangeKey, -1, -1, callback);
+    readAll(topic: string, callback: (err: Error, results: any[]) => void ) {
+        this.read(topic, -1, -1, callback);
     }
 
-    write(rangeKey: string, record: any, expectedQid: number, callback: (err: Error) => void ) {
+    write(topic: string, record: any, expectedQid: number, callback: (err: Error) => void ) {
         if (!record) {
             callback(null);
             return;
         }
 
-        var q = this.getOrCreateQueue(rangeKey, true);
+        var q = this.getOrCreateQueue(topic, true);
         if (!q.write(record, expectedQid, callback)) {
             return;
         }
@@ -46,15 +39,15 @@ class MemoryRepository implements OpenQ.IRepository {
         callback(null);
     }
    
-    deleteTo(rangeKey: string, qid: number, callback: (err: Error) => void ) {
-        var q = this.getOrCreateQueue(rangeKey, false);
+    deleteTo(topic: string, qid: number, callback: (err: Error) => void ) {
+        var q = this.getOrCreateQueue(topic, false);
         if (!q) {
             callback({ message: 'Repository not found', name: 'RepositoryNotFound' });
             return;
         }
 
         if (qid === -1) {
-            delete this.typeQueues[rangeKey];
+            delete this.typeQueues[this.tableName + "/" + topic];
         } else {
             q.deleteTo(qid);
         }
@@ -62,7 +55,8 @@ class MemoryRepository implements OpenQ.IRepository {
         callback(null);
     }
 
-    getOrCreateQueue(rangeKey: string, save: boolean): MemoryQueue {
+    getOrCreateQueue(topic: string, save: boolean): MemoryQueue {
+        var rangeKey = this.tableName + "/" + topic;
         var q: MemoryQueue = this.typeQueues[rangeKey];
         if (!q) {
             q = new MemoryQueue(rangeKey);
@@ -96,5 +90,16 @@ class MemoryQueue {
 
     deleteTo(qid: number) {
         this.messages = this.messages.filter(m => m.qid >= qid);
+    }
+
+    read(afterQid: number, take: number, callback: (err: Error, results: any[]) => void) {
+        var fromQid = afterQid + 1;
+        if (take === -1) {
+            take = this.messages.length;
+        }
+
+        var finalTake = Math.min(this.messages.length - fromQid, fromQid + take);
+        var m = this.messages.slice(fromQid, finalTake);
+        callback(null, m);
     }
 }

@@ -18,11 +18,8 @@ describe('When creating a new Redis repo, ', function () {
     });
 
     describe('When reading an empty repository, ', function () {
-        var error = null;
         it('then the result is an empty array', function (done) {
-            console.log('empty repo read');
-            repo.read('urn:test/' + uuid.v4(), -1, 1, function (err, messages) {
-                console.log('empty repo result', err, messages);
+            repo.read(uuid.v4(), -1, 1, function (err, messages) {
                 expect(err).toBeNull();
                 expect(messages).not.toBeNull();
                 expect(messages.length).toBe(0);
@@ -34,7 +31,8 @@ describe('When creating a new Redis repo, ', function () {
     describe('When writing a new message with expected qid of -1 (any), ', function () {
         it('then no error is raised', function (done) {
             var newMessage = {
-                type: 'urn:test/' + uuid.v4(),
+                topic: uuid.v4(),
+                type: 'urn:test',
                 messageNumber: 1
             };
             repo.write(newMessage.type, newMessage, Qid.ExpectAny, function (err) {
@@ -45,25 +43,45 @@ describe('When creating a new Redis repo, ', function () {
     });
 
     describe('When reading the first message of the correct type, ', function () {
-        it('then the first message is the previously written message, with a qid of zero', function (donex) {
+        it('then the first message is the previously written message, with a qid of zero', function (done) {
             var writeReadMessage = {
-                type: 'urn:test/' + uuid.v4(),
+                topic: uuid.v4(),
+                type: 'urn:test',
                 messageNumber: 1
             };
             repo.write(writeReadMessage.type, writeReadMessage, Qid.ExpectAny, function (writeErr) {
                 console.log('write', writeErr);
                 expect(writeErr).toBeNull();
 
-                console.log('starting-read', writeReadMessage, Qid.FromFirst, 1);
                 repo.read(writeReadMessage.type, Qid.FromFirst, 1, function (readErr, readMessages) {
-                    console.log('read', readErr, readMessages);
                     expect(readErr).toBeNull();
                     expect(readMessages).not.toBeNull();
                     expect(readMessages.length).toBe(1);
                     expect(readMessages[0]).not.toBeNull();
                     expect(readMessages[0].type).toBe(writeReadMessage.type);
                     expect(readMessages[0].qid).toBe(0);
-                    donex();
+                    done();
+                });
+            });
+        });
+    });
+
+    describe('When writing only one message and reading the second message of the same topic, ', function () {
+        it('then zero messages are read', function (done) {
+            var writeReadMessage = {
+                topic: uuid.v4(),
+                type: 'urn:test',
+                messageNumber: 1
+            };
+
+            repo.write(writeReadMessage.type, writeReadMessage, Qid.ExpectAny, function (writeErr) {
+                expect(writeErr).toBeNull();
+
+                repo.read(writeReadMessage.type, Qid.FromSecond, 1, function (readErr, readMessages) {
+                    expect(readErr).toBeNull();
+                    expect(readMessages).not.toBeNull();
+                    expect(readMessages.length).toBe(0);
+                    done();
                 });
             });
         });

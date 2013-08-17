@@ -28,11 +28,8 @@ class RedisRepository implements OpenQ.IRepository {
     constructor(public tableName: string, private client: redis.RedisClient) {
     }
 
-    read(rangeKey: string, afterQid: number, take: number, callback: (err: Error, results: any[]) => void) {
-        console.log('RedisRepository.read', rangeKey, afterQid, take);
-
-        this.getOrCreateQueue(rangeKey, false, (err, queue) => {
-            console.log('RedisRepository.getOrCreateQueue', rangeKey, err, !!queue);
+    read(topic: string, afterQid: number, take: number, callback: (err: Error, results: any[]) => void) {
+        this.getOrCreateQueue(topic, false, (err, queue) => {
             if (err) {
                 callback(err, null);
                 return;
@@ -42,22 +39,36 @@ class RedisRepository implements OpenQ.IRepository {
         });
     }
 
-    readLast(rangeKey: string, callback: (err: Error, results: any) => void ) {
-        this.read(rangeKey, -1, -1, (err, results) => callback(err, results[0]));
+    readLast(topic: string, callback: (err: Error, results: any) => void ) {
+        this.read(topic, -1, -1, (err, results) => callback(err, results[0]));
     }
 
-    /** Note this is for Short queues only, as it is limited to 10000 rows max */
-    readAll(rangeKey: string, callback: (err: Error, results: any[]) => void ) {
-        this.read(rangeKey, 0, 10000, callback);
+    /** Note this is for short queues only, as it is limited to 1000 rows max */
+    readAll(topic: string, callback: (err: Error, results: any[]) => void ) {
+        this.getOrCreateQueue(topic, false, (err, queue) => {
+            if (err) {
+                callback(err, null);
+                return;
+            }
+
+            queue.getQueueLength((err, length) => {
+                if (err) {
+                    callback(err, null);
+                    return;
+                }
+
+                queue.read(0, length, callback);
+            });
+        });
     }
 
-    write(rangeKey: string, record: any, expectedQid: number, callback: (err: Error) => void ) {
+    write(topic: string, record: any, expectedQid: number, callback: (err: Error) => void ) {
         if (!record) {
             callback(null);
             return;
         }
 
-        this.getOrCreateQueue(rangeKey, true, (err, q) => {
+        this.getOrCreateQueue(topic, true, (err, q) => {
             if (err) {
                 callback(err);
                 return;
@@ -67,8 +78,8 @@ class RedisRepository implements OpenQ.IRepository {
         });
     }
     
-    deleteTo(rangeKey: string, qid: number, callback: (err: Error) => void ) {
-        this.getOrCreateQueue(rangeKey, false, (err, q) => {
+    deleteTo(topic: string, qid: number, callback: (err: Error) => void ) {
+        this.getOrCreateQueue(topic, false, (err, q) => {
             if (err || !q) {
                 callback({ message: 'Repository not found', name: 'RepositoryNotFound' });
                 return;
@@ -80,7 +91,8 @@ class RedisRepository implements OpenQ.IRepository {
                     return;
 
                     if (qid === -1) {
-                        delete this.typeQueues[rangeKey];
+                        var fullRangeKey = this.tableName + "/" + topic;
+                        delete this.typeQueues[fullRangeKey];
                     }
 
                     callback(null);
@@ -89,12 +101,13 @@ class RedisRepository implements OpenQ.IRepository {
         });
     }
 
-    getOrCreateQueue(rangeKey: string, save: boolean, callback: (err: Error, queue: RedisHashQueue ) => void):void {
-        var q: RedisHashQueue = this.typeQueues[rangeKey];
+    getOrCreateQueue(topic: string, save: boolean, callback: (err: Error, queue: RedisHashQueue ) => void):void {
+        var fullRangeKey = this.tableName + "/" + topic;
+        var q: RedisHashQueue = this.typeQueues[fullRangeKey];
         if (!q) {
-            q = new RedisHashQueue(rangeKey, this.client);
+            q = new RedisHashQueue(fullRangeKey, this.client);
             if (save) {
-                this.typeQueues[rangeKey] = q;
+                this.typeQueues[fullRangeKey] = q;
             }
         }
 
@@ -102,92 +115,8 @@ class RedisRepository implements OpenQ.IRepository {
     }
 }
 
-
-/*
-Iteration 1 - Using redis sets [ llen, ltrim, lrange, rpush ]
-*/
-/*class RedisSetQueue {
-    constructor(public rangeKey: string, private client: redis.RedisClient) {
-    }
-
-    create(callback:(err: Error) => void) {
-    }
-
-    getQueueLength(callback: (err: Error, length: number) => void ) {
-        this.client.llen(this.rangeKey, callback);
-    } 
-
-    write(message: OpenQ.IMessage, expectedQid: number, callback: (err: Error, newQueueLength:number) => void ) {
-        console.log('RedisSetQueue.write', message, expectedQid);
-        this.getQueueLength((err: Error, queueLength: number) => {
-            console.log('RedisSetQueue.write.getQueueLength', err, queueLength);
-            if (err) {
-                callback(err, null);
-                return;
-            }
-
-            if (expectedQid !== -1) {
-                if (queueLength !== expectedQid) {
-                    var err = { message: 'Expected next qid to be ' + expectedQid + ' but was ' + queueLength, name: 'ExpectedQidViolation' };
-                    callback(err, null);
-                    return;
-                }
-            }
-
-            message.qid = queueLength;
-            
-            this.client.rpush(this.rangeKey, [JSON.stringify(message)], (err:Error, newQueueLength:number) => {
-                console.log('RedisSetQueue.write.rpush', err, this.rangeKey, newQueueLength, callback);
-                if (err) {
-                    callback(err, null);
-                    return;
-                } 
-
-                callback(null, newQueueLength);
-            });
-        
-        });
-    }
-
-    deleteTo(qid: number, callback: (err: Error) => void ) {
-        this.client.ltrim(this.rangeKey, qid, -1, callback);
-    }
-
-    read(start: number, stop: number, callback: (err: Error, results: any[]) => void ) {
-        //this.client.hgetall("xyzxxyz", (err: Error, results: any) => {
-        console.log('RedisSetQueue.read', this.rangeKey, start, stop);
-        this.client.lrange(this.rangeKey, start, stop, (err: Error, json: any) => {
-            console.log('RedisSetQueue.read.lrange', err, '\'' + json + '\'');
-            if (err) {
-                callback(err, null);
-                return;
-            }
-
-            var result = null;
-            if (!!json) {
-                try {
-                    result = JSON.parse(json);
-                } catch (parseError) {
-                    callback(parseError, null);
-                    return;
-                }
-            }
-
-            callback(null, result || []);
-        });
-        ////var fromQid = afterQid + 1;
-        ////if (take === -1) {
-        ////    take = q.messages.length;
-        ////}
-
-        ////var finalTake = Math.min(q.messages.length - fromQid, fromQid + take);
-        ////var m = q.messages.slice(fromQid, finalTake);
-        ////callback(null, m);
-    }
-}*/
-
 /**
-Iteration 2 - Using redis hashes [ hlen, hmget, hsetnx ] where the hash is a combination of range key and qid e.g. urn:myrangekey/1 
+Iteration 2 - Using redis hashes [ hlen, hmget, hsetnx ] where the hash is a combination of range key and the field is the qid e.g. hsetnx "urn:myrangekey" "1" "{ content: 'blah' type: 'blah' }"
 */
 class RedisHashQueue {
     constructor(public rangeKey: string, private client: redis.RedisClient) {
@@ -237,7 +166,6 @@ class RedisHashQueue {
     }
 
     read(start: number, stop: number, callback: (err: Error, results: any[]) => void) {
-        //this.client.hgetall("xyzxxyz", (err: Error, results: any) => {
         var args = [this.rangeKey];
         for (var i = start; i <= stop; i++) {
             args.push('' + i);
@@ -261,13 +189,5 @@ class RedisHashQueue {
 
             callback(null, messages || []);
         });
-        ////var fromQid = afterQid + 1;
-        ////if (take === -1) {
-        ////    take = q.messages.length;
-        ////}
-
-        ////var finalTake = Math.min(q.messages.length - fromQid, fromQid + take);
-        ////var m = q.messages.slice(fromQid, finalTake);
-        ////callback(null, m);
     }
 }

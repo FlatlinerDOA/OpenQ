@@ -33,6 +33,7 @@ declare module OpenQ {
 
     export interface IMessage {
         type: string;
+        topic?: string;
         qid?: number;
     }
 
@@ -70,12 +71,12 @@ declare module OpenQ {
 
     export interface IRepository {
         tableName: string;
-        write: (rangeKey:string, record: any, expectedSequence: number, callback: (err: Error) => void ) => void;
+        write: (topic:string, record: any, expectedSequence: number, callback: (err: Error) => void ) => void;
         ////writeAll: (rangeKey: string, records: any[], expectedSequence: number, callback: (err: Error) => void ) => void;
-        read: (rangeKey: string, afterSequence: number, take: number, callback: (err: Error, results: any[]) => void) => void;
-        readAll: (rangeKey: string, callback: (err: Error, results: any[]) => void ) => void;
-        readLast: (rangeKey: string, callback: (err: Error, result: any) => void ) => void;
-        deleteTo: (rangeKey: string, qid: number, callback:(err: Error) => void) => void;
+        read: (topic: string, afterSequence: number, take: number, callback: (err: Error, results: any[]) => void) => void;
+        readAll: (topic: string, callback: (err: Error, results: any[]) => void ) => void;
+        readLast: (topic: string, callback: (err: Error, result: any) => void ) => void;
+        deleteTo: (topic: string, qid: number, callback:(err: Error) => void) => void;
     }
 
     export interface IPublisher {

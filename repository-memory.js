@@ -8,36 +8,29 @@ var MemoryRepository = (function () {
         this.tableName = tableName;
         this.typeQueues = {};
     }
-    MemoryRepository.prototype.read = function (rangeKey, afterQid, take, callback) {
-        var q = this.getOrCreateQueue(rangeKey, false);
-        var fromQid = afterQid + 1;
-        if (take === -1) {
-            take = q.messages.length;
-        }
-
-        var finalTake = Math.min(q.messages.length - fromQid, fromQid + take);
-        var m = q.messages.slice(fromQid, finalTake);
-        callback(null, m);
+    MemoryRepository.prototype.read = function (topic, afterQid, take, callback) {
+        var q = this.getOrCreateQueue(topic, false);
+        q.read(afterQid, take, callback);
     };
 
-    MemoryRepository.prototype.readLast = function (rangeKey, callback) {
-        var q = this.getOrCreateQueue(rangeKey, false);
-        this.read(rangeKey, q.messages.length - 2, 1, function (err, results) {
+    MemoryRepository.prototype.readLast = function (topic, callback) {
+        var q = this.getOrCreateQueue(topic, false);
+        this.read(topic, q.messages.length - 2, 1, function (err, results) {
             return callback(err, results[0]);
         });
     };
 
-    MemoryRepository.prototype.readAll = function (rangeKey, callback) {
-        this.read(rangeKey, -1, -1, callback);
+    MemoryRepository.prototype.readAll = function (topic, callback) {
+        this.read(topic, -1, -1, callback);
     };
 
-    MemoryRepository.prototype.write = function (rangeKey, record, expectedQid, callback) {
+    MemoryRepository.prototype.write = function (topic, record, expectedQid, callback) {
         if (!record) {
             callback(null);
             return;
         }
 
-        var q = this.getOrCreateQueue(rangeKey, true);
+        var q = this.getOrCreateQueue(topic, true);
         if (!q.write(record, expectedQid, callback)) {
             return;
         }
@@ -45,15 +38,15 @@ var MemoryRepository = (function () {
         callback(null);
     };
 
-    MemoryRepository.prototype.deleteTo = function (rangeKey, qid, callback) {
-        var q = this.getOrCreateQueue(rangeKey, false);
+    MemoryRepository.prototype.deleteTo = function (topic, qid, callback) {
+        var q = this.getOrCreateQueue(topic, false);
         if (!q) {
             callback({ message: 'Repository not found', name: 'RepositoryNotFound' });
             return;
         }
 
         if (qid === -1) {
-            delete this.typeQueues[rangeKey];
+            delete this.typeQueues[this.tableName + "/" + topic];
         } else {
             q.deleteTo(qid);
         }
@@ -61,7 +54,8 @@ var MemoryRepository = (function () {
         callback(null);
     };
 
-    MemoryRepository.prototype.getOrCreateQueue = function (rangeKey, save) {
+    MemoryRepository.prototype.getOrCreateQueue = function (topic, save) {
+        var rangeKey = this.tableName + "/" + topic;
         var q = this.typeQueues[rangeKey];
         if (!q) {
             q = new MemoryQueue(rangeKey);
@@ -98,6 +92,17 @@ var MemoryQueue = (function () {
         this.messages = this.messages.filter(function (m) {
             return m.qid >= qid;
         });
+    };
+
+    MemoryQueue.prototype.read = function (afterQid, take, callback) {
+        var fromQid = afterQid + 1;
+        if (take === -1) {
+            take = this.messages.length;
+        }
+
+        var finalTake = Math.min(this.messages.length - fromQid, fromQid + take);
+        var m = this.messages.slice(fromQid, finalTake);
+        callback(null, m);
     };
     return MemoryQueue;
 })();

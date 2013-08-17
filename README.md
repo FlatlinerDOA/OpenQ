@@ -50,8 +50,9 @@ When a client is reading an inbox or outbox the OpenQ server MUST guarantee the 
 A message in OpenQ can have any content you like as long as it adheres to the following constraints.
 
 - The message MUST be valid JSON.
-- The first member MUST be a "type" string which MUST NOT be null or empty.
-- The message MAY have a member named "qid" which represents the monotonically incremented number in the queue, if specified this will be verified to be the next number in the queue (if not the enqueue will fail).
+- One member MUST be a "type" string which MUST NOT be null or empty.
+- One member MAY be a "topic" string which MAY be null or empty (if omitted, the topic is coalesced to an empty string).
+- One member MAY be a "qid" which represents the monotonically incremented number in the queue for the given topic, if specified this will be verified to be the next number in the queue (if not the enqueue will fail).
 - The entire message MUST be less than [65KiB](http://en.wikipedia.org/wiki/Kibibyte). 
 
 ## Reserved OpenQ Message Types

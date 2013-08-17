@@ -21,11 +21,8 @@ var RedisRepository = (function () {
         this.client = client;
         this.typeQueues = {};
     }
-    RedisRepository.prototype.read = function (rangeKey, afterQid, take, callback) {
-        console.log('RedisRepository.read', rangeKey, afterQid, take);
-
-        this.getOrCreateQueue(rangeKey, false, function (err, queue) {
-            console.log('RedisRepository.getOrCreateQueue', rangeKey, err, !!queue);
+    RedisRepository.prototype.read = function (topic, afterQid, take, callback) {
+        this.getOrCreateQueue(topic, false, function (err, queue) {
             if (err) {
                 callback(err, null);
                 return;
@@ -35,23 +32,37 @@ var RedisRepository = (function () {
         });
     };
 
-    RedisRepository.prototype.readLast = function (rangeKey, callback) {
-        this.read(rangeKey, -1, -1, function (err, results) {
+    RedisRepository.prototype.readLast = function (topic, callback) {
+        this.read(topic, -1, -1, function (err, results) {
             return callback(err, results[0]);
         });
     };
 
-    RedisRepository.prototype.readAll = function (rangeKey, callback) {
-        this.read(rangeKey, 0, 10000, callback);
+    RedisRepository.prototype.readAll = function (topic, callback) {
+        this.getOrCreateQueue(topic, false, function (err, queue) {
+            if (err) {
+                callback(err, null);
+                return;
+            }
+
+            queue.getQueueLength(function (err, length) {
+                if (err) {
+                    callback(err, null);
+                    return;
+                }
+
+                queue.read(0, length, callback);
+            });
+        });
     };
 
-    RedisRepository.prototype.write = function (rangeKey, record, expectedQid, callback) {
+    RedisRepository.prototype.write = function (topic, record, expectedQid, callback) {
         if (!record) {
             callback(null);
             return;
         }
 
-        this.getOrCreateQueue(rangeKey, true, function (err, q) {
+        this.getOrCreateQueue(topic, true, function (err, q) {
             if (err) {
                 callback(err);
                 return;
@@ -61,9 +72,9 @@ var RedisRepository = (function () {
         });
     };
 
-    RedisRepository.prototype.deleteTo = function (rangeKey, qid, callback) {
+    RedisRepository.prototype.deleteTo = function (topic, qid, callback) {
         var _this = this;
-        this.getOrCreateQueue(rangeKey, false, function (err, q) {
+        this.getOrCreateQueue(topic, false, function (err, q) {
             if (err || !q) {
                 callback({ message: 'Repository not found', name: 'RepositoryNotFound' });
                 return;
@@ -75,7 +86,8 @@ var RedisRepository = (function () {
                     return;
 
                     if (qid === -1) {
-                        delete _this.typeQueues[rangeKey];
+                        var fullRangeKey = _this.tableName + "/" + topic;
+                        delete _this.typeQueues[fullRangeKey];
                     }
 
                     callback(null);
@@ -84,12 +96,13 @@ var RedisRepository = (function () {
         });
     };
 
-    RedisRepository.prototype.getOrCreateQueue = function (rangeKey, save, callback) {
-        var q = this.typeQueues[rangeKey];
+    RedisRepository.prototype.getOrCreateQueue = function (topic, save, callback) {
+        var fullRangeKey = this.tableName + "/" + topic;
+        var q = this.typeQueues[fullRangeKey];
         if (!q) {
-            q = new RedisHashQueue(rangeKey, this.client);
+            q = new RedisHashQueue(fullRangeKey, this.client);
             if (save) {
-                this.typeQueues[rangeKey] = q;
+                this.typeQueues[fullRangeKey] = q;
             }
         }
 

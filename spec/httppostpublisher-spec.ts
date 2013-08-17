@@ -16,7 +16,7 @@ describe('When creating a new http post publisher, ', () => {
             return true;
         });
 
-        var result = d.publish([{ type: 'urn:twitter/tweet' }], 'subscriber');
+        var result = d.publish([{ topic: 'HttpPostPublisher', type: 'urn:twitter/tweet' }], 'subscriber');
 
         it('then the handler is called once', () => expect(callCount).toBe(1));
         it('then the result is true', () => expect(result).toBe(true));

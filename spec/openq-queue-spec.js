@@ -13,9 +13,10 @@ describe('When creating a new queue, ', function () {
         expect(q.messages.tableName).toBe('table:users/userName/inbox/messages');
     });
 
-    describe('When subscribing for the first time from the beggining, ', function () {
+    describe('When subscribing for the first time from the beginning, ', function () {
         var subscribeMessage = {
             type: 'urn:openq/subscribe',
+            topic: '',
             subscriber: 'https://subscriber.com/subscriber/inbox',
             token: 'token',
             exclusive: false,
