@@ -1,6 +1,7 @@
 /// <reference path="../types/common.d.ts" />
 /// <reference path="../types/jasmine.d.ts" />
 var redisRepo = require('../repository-redis');
+var uuid = require('uuid');
 
 describe('When creating a new Redis repo, ', () => {
     var repo: OpenQ.IRepository = redisRepo.createRepository('tablename');
@@ -16,77 +17,58 @@ describe('When creating a new Redis repo, ', () => {
 
     describe('When reading an empty repository, ', () =>
     {
-        it('then the result is an empty array', () => {
-            var error = null;
-            
-            var messages: OpenQ.IMessage[] = null;
-            runs(() => {
-                repo.read('type', -1, 1, (err, results) => {
-                    error = err ? "Error: " + err : null;
-                    messages = results;
-                });
-            });
-
-            waitsFor(() => error || messages, "Failed to read", 5000);
-
-            runs(() => {
-                expect(error).toBeNull();
+        var error = null;
+        it('then the result is an empty array', (done) => {
+            console.log('empty repo read');
+            repo.read('urn:test/' + uuid.v4(), -1, 1, (err, messages) => {
+                console.log('empty repo result', err, messages);
+                expect(err).toBeNull();
                 expect(messages).not.toBeNull();
                 expect(messages.length).toBe(0);
+                done();
             });
         });
     })
 
     describe('When writing a new message with expected qid of -1 (any), ', () => {
-        var error, completed;
-
-        runs(() => {
+        it('then no error is raised', (done) => {
             var newMessage: OpenQ.IMessage = {
-                type: 'urn:test',
+                type: 'urn:test/' + uuid.v4(),
                 messageNumber: 1
             }
-
             repo.write(newMessage.type, newMessage, Qid.ExpectAny, err => {
-                error = err;
-                completed = true;
+                expect(err).toBeNull();
+                done();
             });
         });
+    });
 
-        it('then no error is raised', () => {
-            waitsFor(() => error || completed, "Failed to write a new message", 500);
+    describe('When reading the first message of the correct type, ', () => {
+        it('then the first message is the previously written message, with a qid of zero', (donex) => {
+            var writeReadMessage: OpenQ.IMessage = {
+                type: 'urn:test/' + uuid.v4(),
+                messageNumber: 1
+            }
+            repo.write(writeReadMessage.type, writeReadMessage, Qid.ExpectAny, (writeErr) => {
+                console.log('write', writeErr);
+                expect(writeErr).toBeNull();
+                //expect(newLength).toBe(1);
 
-            runs(() => {
-                expect(error).toBeNull();
+                console.log('starting-read', writeReadMessage, Qid.FromFirst, 1);
+                repo.read(writeReadMessage.type, Qid.FromFirst, 1, (readErr, readMessages) => {
+                    console.log('read', readErr, readMessages);
+                    expect(readErr).toBeNull();
+                    expect(readMessages).not.toBeNull();
+                    expect(readMessages.length).toBe(1);
+                    expect(readMessages[0]).not.toBeNull();
+                    expect(readMessages[0].type).toBe(writeReadMessage.type);
+                    expect(readMessages[0].qid).toBe(0);
+                    donex();
+                });
             });
         });
+    });
 
-        //describe('When reading the first message of the correct type, ', () => {
-        //    var error;
-
-        //    var readMessages: OpenQ.IMessage[];
-
-        //    runs(() => {
-        //        repo.read('urn:test', Qid.FromFirst, 1, (err, results) => {
-        //            error = err;
-        //            readMessages = results;
-        //        });
-        //    });
-        //    waitsFor(() => error || completed, "Failed to read the message", 500);
-
-        //    runs(() => {
-        //        it('then one message is read', () => {
-        //            expect(readMessages).not.toBeNull();
-        //            expect(readMessages.length).toBe(1);
-        //        });
-
-        //        it('then the first message is the previously written message', () => {
-        //            expect(readMessages[0]).not.toBeNull();
-        //            expect(readMessages[0].type).toBe('urn:test');
-        //        });
-
-        //        it('then the first message has a qid of zero', () => expect(readMessages[0].qid).toBe(0));
-        //    });
-        //});
 
         //describe('When reading the second message of the correct type, ', () => {
         //    var readMessages: OpenQ.IMessage[];
@@ -179,7 +161,6 @@ describe('When creating a new Redis repo, ', () => {
         //        expect(readMessages.length).toBe(0);
         //    });
         //});
-    });
 });
 /*
 describe('When creating a new Redis repo, ', () => {

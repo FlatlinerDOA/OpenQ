@@ -11,7 +11,6 @@ class TestResult {
 
 class Tester {
     constructor(public testCount:number, doneCallback) {
-
     }
 
     loadTest() {

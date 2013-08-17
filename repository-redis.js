@@ -22,13 +22,16 @@ var RedisRepository = (function () {
         this.typeQueues = {};
     }
     RedisRepository.prototype.read = function (rangeKey, afterQid, take, callback) {
-        this.getOrCreateQueue(rangeKey, false, function (err, q) {
+        console.log('RedisRepository.read', rangeKey, afterQid, take);
+
+        this.getOrCreateQueue(rangeKey, false, function (err, queue) {
+            console.log('RedisRepository.getOrCreateQueue', rangeKey, err, !!queue);
             if (err) {
                 callback(err, null);
                 return;
             }
 
-            q.read(afterQid, afterQid + take, callback);
+            queue.read(afterQid + 1, afterQid + take, callback);
         });
     };
 
@@ -53,6 +56,7 @@ var RedisRepository = (function () {
                 callback(err);
                 return;
             }
+
             q.write(record, expectedQid, callback);
         });
     };
@@ -83,32 +87,34 @@ var RedisRepository = (function () {
     RedisRepository.prototype.getOrCreateQueue = function (rangeKey, save, callback) {
         var q = this.typeQueues[rangeKey];
         if (!q) {
-            q = new RedisQueue(rangeKey, this.client);
+            q = new RedisHashQueue(rangeKey, this.client);
             if (save) {
                 this.typeQueues[rangeKey] = q;
             }
-
-            callback(null, q);
         }
+
+        callback(null, q);
     };
     return RedisRepository;
 })();
 
-var RedisQueue = (function () {
-    function RedisQueue(rangeKey, client) {
+var RedisHashQueue = (function () {
+    function RedisHashQueue(rangeKey, client) {
         this.rangeKey = rangeKey;
         this.client = client;
     }
-    RedisQueue.prototype.create = function (callback) {
+    RedisHashQueue.prototype.create = function (callback) {
     };
 
-    RedisQueue.prototype.getQueueLength = function (callback) {
-        this.client.llen(this.rangeKey, callback);
+    RedisHashQueue.prototype.getQueueLength = function (callback) {
+        this.client.hlen(this.rangeKey, callback);
     };
 
-    RedisQueue.prototype.write = function (message, expectedQid, callback) {
+    RedisHashQueue.prototype.write = function (message, expectedQid, callback) {
         var _this = this;
+        console.log('RedisHashQueue.write', message, expectedQid);
         this.getQueueLength(function (err, queueLength) {
+            console.log('RedisHashQueue.write.getQueueLength', err, queueLength);
             if (err) {
                 callback(err);
                 return;
@@ -124,7 +130,9 @@ var RedisQueue = (function () {
 
             message.qid = queueLength;
 
-            _this.client.rpush(_this.rangeKey, [message], function (err, newQueueLength) {
+            var args = [_this.rangeKey, message.qid, JSON.stringify(message)];
+            _this.client.hsetnx(args, function (err) {
+                console.log('RedisHashQueue.hsetnx', args, err);
                 if (err) {
                     callback(err);
                     return;
@@ -135,31 +143,40 @@ var RedisQueue = (function () {
         });
     };
 
-    RedisQueue.prototype.deleteTo = function (qid, callback) {
-        this.client.ltrim(this.rangeKey, qid, -1, callback);
+    RedisHashQueue.prototype.deleteTo = function (qid, callback) {
+        this.client.ltrim([this.rangeKey, qid, -1], callback);
     };
 
-    RedisQueue.prototype.read = function (start, stop, callback) {
-        this.client.lrange(this.rangeKey, start, stop, function (err, results) {
+    RedisHashQueue.prototype.read = function (start, stop, callback) {
+        var args = [this.rangeKey];
+        for (var i = start; i <= stop; i++) {
+            args.push('' + i);
+        }
+
+        this.client.hmget(args, function (err, results) {
             if (err) {
                 callback(err, null);
                 return;
             }
 
-            var result = null;
+            var messages = null;
             if (results !== null) {
                 try  {
-                    result = results;
+                    messages = results.filter(function (x) {
+                        return x !== null;
+                    }).map(function (x) {
+                        return JSON.parse(x);
+                    });
                 } catch (parseError) {
                     callback(parseError, null);
                     return;
                 }
             }
 
-            callback(null, result || []);
+            callback(null, messages || []);
         });
     };
-    return RedisQueue;
+    return RedisHashQueue;
 })();
 
 //# sourceMappingURL=repository-redis.js.map

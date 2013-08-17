@@ -1,4 +1,5 @@
 var redisRepo = require('../repository-redis');
+var uuid = require('uuid');
 
 describe('When creating a new Redis repo, ', function () {
     var repo = redisRepo.createRepository('tablename');
@@ -17,51 +18,53 @@ describe('When creating a new Redis repo, ', function () {
     });
 
     describe('When reading an empty repository, ', function () {
-        it('then the result is an empty array', function () {
-            var error = null;
-
-            var messages = null;
-            runs(function () {
-                repo.read('type', -1, 1, function (err, results) {
-                    error = err ? "Error: " + err : null;
-                    messages = results;
-                });
-            });
-
-            waitsFor(function () {
-                return error || messages;
-            }, "Failed to read", 5000);
-
-            runs(function () {
-                expect(error).toBeNull();
+        var error = null;
+        it('then the result is an empty array', function (done) {
+            console.log('empty repo read');
+            repo.read('urn:test/' + uuid.v4(), -1, 1, function (err, messages) {
+                console.log('empty repo result', err, messages);
+                expect(err).toBeNull();
                 expect(messages).not.toBeNull();
                 expect(messages.length).toBe(0);
+                done();
             });
         });
     });
 
     describe('When writing a new message with expected qid of -1 (any), ', function () {
-        var error, completed;
-
-        runs(function () {
+        it('then no error is raised', function (done) {
             var newMessage = {
-                type: 'urn:test',
+                type: 'urn:test/' + uuid.v4(),
                 messageNumber: 1
             };
-
             repo.write(newMessage.type, newMessage, Qid.ExpectAny, function (err) {
-                error = err;
-                completed = true;
+                expect(err).toBeNull();
+                done();
             });
         });
+    });
 
-        it('then no error is raised', function () {
-            waitsFor(function () {
-                return error || completed;
-            }, "Failed to write a new message", 500);
+    describe('When reading the first message of the correct type, ', function () {
+        it('then the first message is the previously written message, with a qid of zero', function (donex) {
+            var writeReadMessage = {
+                type: 'urn:test/' + uuid.v4(),
+                messageNumber: 1
+            };
+            repo.write(writeReadMessage.type, writeReadMessage, Qid.ExpectAny, function (writeErr) {
+                console.log('write', writeErr);
+                expect(writeErr).toBeNull();
 
-            runs(function () {
-                expect(error).toBeNull();
+                console.log('starting-read', writeReadMessage, Qid.FromFirst, 1);
+                repo.read(writeReadMessage.type, Qid.FromFirst, 1, function (readErr, readMessages) {
+                    console.log('read', readErr, readMessages);
+                    expect(readErr).toBeNull();
+                    expect(readMessages).not.toBeNull();
+                    expect(readMessages.length).toBe(1);
+                    expect(readMessages[0]).not.toBeNull();
+                    expect(readMessages[0].type).toBe(writeReadMessage.type);
+                    expect(readMessages[0].qid).toBe(0);
+                    donex();
+                });
             });
         });
     });

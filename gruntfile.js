@@ -7,10 +7,13 @@ module.exports = function (grunt) {
     grunt.registerTask('tests', 'Spawns a child process that runs jasmine-node specs', function (args) {
         var done = this.async();
         var testProc = child_process.fork('tests.js');
-        testProc.on('exit', function() {
-            grunt.log.writeln('Tests done!');
+        testProc.on('exit', function(exitCode) {
             testProc = null;
-            done();
+            if (exitCode !== 0) {
+                done(false);
+            } else {
+                done();
+            }
         });
     });
     grunt.initConfig({
@@ -53,5 +56,5 @@ module.exports = function (grunt) {
         }
     });
 
-       grunt.registerTask('default', ['ts:root', 'tests', 'watch']);
+    grunt.registerTask('default', ['ts:root', 'ts:spec', 'tests', 'watch']);
 }

@@ -42,7 +42,7 @@ var options = {
     },
     isVerbose: isVerbose,
     showColors: showColors,
-    includeStackTrace: true
+    includeStackTrace: false
 }
 
 console.log('Running all tests in ' + __dirname + '/spec');

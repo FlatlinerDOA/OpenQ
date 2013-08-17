@@ -135,6 +135,7 @@
     <Content Include="types\jasmine.d.ts" />
     <TypeScriptCompile Include="types\knockout.d.ts" />
     <TypeScriptCompile Include="types\jquery.d.ts" />
+    <Content Include="types\node.d.ts" />
     <Content Include="types\node_redis.d.ts" />
     <Content Include="types\rx.d.ts" />
     <TypeScriptCompile Include="types\common.d.ts" />
