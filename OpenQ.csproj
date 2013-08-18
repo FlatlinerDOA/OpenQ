@@ -126,6 +126,10 @@
     <Content Include="spec\repository-redis-spec.js">
       <DependentUpon>repository-redis-spec.ts</DependentUpon>
     </Content>
+    <TypeScriptCompile Include="spec\telemetry-spec.ts" />
+    <Content Include="spec\telemetry-spec.js">
+      <DependentUpon>telemetry-spec.ts</DependentUpon>
+    </Content>
     <Content Include="tests.js">
       <DependentUpon>tests.ts</DependentUpon>
     </Content>
