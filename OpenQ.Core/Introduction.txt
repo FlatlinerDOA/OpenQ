@@ -1,0 +1,27 @@
+﻿The Distributed Queue uses a Two-phase commit strategy for writing to the queue.
+
+The first phase Enqueues the value with an expected sequence number that the sender assumes the queue is at. 
+This assumes the sender has already read from this or another peer's copy of the queue.
+
+
+
+Example:
+
+Initial State:
+Peer #1		Peer #2		Peer #3
+1 - Apple	1 - Apple	1 - Apple
+2 - Orange	2 - Orange	2 - Orange
+
+
+Sender: 
+var peer1Response = Peer1.EnqueueAsync(values: [ "Banana", "Pineapple" ], expectedVersion: 2)
+var peer2Response = Peer2.EnqueueAsync(values: [ "Banana", "Pineapple" ], expectedVersion: 2)
+var peer3Response = Peer3.EnqueueAsync(values: [ "Banana", "Pineapple" ], expectedVersion: 2)
+
+var commitToken = new CommitToken(peer1Response, peer2Response, peer3Response);
+
+var success1 = Peer1.CommitAsync(commitToken)
+var success2 = Peer2.CommitAsync(commitToken)
+var success3 = Peer3.CommitAsync(commitToken)
+
+return success1 && success2 && success3
