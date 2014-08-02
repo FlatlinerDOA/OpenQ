@@ -1,3 +1,5 @@
+/// <reference path="../types/common.d.ts" />
+/// <reference path="../types/jasmine.d.ts" />
 var memoryRepo = require('../repository-memory');
 var uuid = require('uuid');
 
@@ -215,4 +217,3 @@ describe('When creating a new memory repo, ', function () {
         });
     });
 });
-//# sourceMappingURL=repository-memory-spec.js.map

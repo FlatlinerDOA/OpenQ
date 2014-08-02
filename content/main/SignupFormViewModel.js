@@ -1,3 +1,7 @@
+/// <reference path="HomeViewModel.ts" />
+/// <reference path="../../types/jquery.d.ts" />
+/// <reference path="../common/Lib.ts" />
+/// <reference path="../../types/client.d.ts" />
 var SignupFormViewModel = (function () {
     function SignupFormViewModel() {
         var _this = this;
@@ -79,6 +83,7 @@ var SignupFormViewModel = (function () {
             contentType: 'application/json'
         }).fail(function (e) {
             _this.errorText(e.responseText);
+            // todo: set up a global front end error handler?
         }).done(function () {
             _this.errorText('');
             var form = new HomeViewModel();

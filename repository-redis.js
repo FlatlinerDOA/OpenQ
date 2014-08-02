@@ -1,3 +1,7 @@
+// Uses Redis Lists for storage of the queues -> http://redis.io/commands#list (unsure if this is the best technique but will do for v1)
+// See http://www.nodejs.net/a/20130128/105909.html for Redis samples
+/// <reference path="types/common.d.ts" />
+/// <reference path="types/node_redis.d.ts" />
 var redis = require("redis");
 var redisClient = null;
 
@@ -9,12 +13,14 @@ function createRepository(tableName) {
             enable_offline_queue: false
         };
         redisClient = redis.createClient(port, host, {});
+        // TODO: redisClient.auth("password");
     }
 
     return new RedisRepository(tableName, redisClient);
 }
 exports.createRepository = createRepository;
 
+/** Implementation of the standard OpenQ repository using Redis */
 var RedisRepository = (function () {
     function RedisRepository(tableName, client) {
         this.tableName = tableName;
@@ -38,6 +44,7 @@ var RedisRepository = (function () {
         });
     };
 
+    /** Note this is for short queues only, as it is limited to 1000 rows max */
     RedisRepository.prototype.readAll = function (topic, callback) {
         this.getOrCreateQueue(topic, false, function (err, queue) {
             if (err) {
@@ -111,6 +118,9 @@ var RedisRepository = (function () {
     return RedisRepository;
 })();
 
+/**
+Iteration 2 - Using redis hashes [ hlen, hmget, hsetnx ] where the hash is a combination of range key and the field is the qid e.g. hsetnx "urn:myrangekey" "1" "{ content: 'blah' type: 'blah' }"
+*/
 var RedisHashQueue = (function () {
     function RedisHashQueue(rangeKey, client) {
         this.rangeKey = rangeKey;
@@ -191,5 +201,3 @@ var RedisHashQueue = (function () {
     };
     return RedisHashQueue;
 })();
-
-//# sourceMappingURL=repository-redis.js.map

@@ -1,3 +1,4 @@
+/// <reference path="types/common.d.ts" />
 function createRepository(tableName) {
     return new MemoryRepository(tableName);
 }
@@ -106,5 +107,3 @@ var MemoryQueue = (function () {
     };
     return MemoryQueue;
 })();
-
-//# sourceMappingURL=repository-memory.js.map

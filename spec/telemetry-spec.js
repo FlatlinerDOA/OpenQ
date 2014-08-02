@@ -1,9 +1,12 @@
+/// <reference path="../types/common.d.ts" />
+/// <reference path="../types/jasmine.d.ts" />
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     __.prototype = b.prototype;
     d.prototype = new __();
 };
+
 var IPricingStructure = (function () {
     function IPricingStructure() {
     }
@@ -184,18 +187,15 @@ var CostCalculator = (function () {
 
 describe('Given twitter\'s 340 million 500byte messages per day, running on AWS, with an average of 126 local and 1 remote subscribers per queue', function () {
     var calc = new CostCalculator(new AmazonPricing());
-    var cost = calc.calculateCosts([
-        {
+    var cost = calc.calculateCosts([{
             bytesWritten: 340000000 * 30 * 500,
             messageCount: 340000000,
             localSubscribers: 126,
             remoteSubscribers: 1
-        }
-    ]);
+        }]);
 
     it('Then the cost is less than $3,000 per month', function () {
         console.log('Total Cost:', cost);
         expect(cost.totalCost).toBeLessThan(3000);
     });
 });
-//# sourceMappingURL=telemetry-spec.js.map

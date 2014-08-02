@@ -1,3 +1,4 @@
+/// <reference path="../../types/client.d.ts" />
 var Navigation;
 (function (Navigation) {
     Navigation.currentTemplate;

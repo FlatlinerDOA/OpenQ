@@ -1,3 +1,5 @@
+/// <reference path="../types/common.d.ts" />
+/// <reference path="../types/jasmine.d.ts" />
 var openq = require('../openq');
 var memoryRepo = require('../repository-memory');
 
@@ -49,5 +51,3 @@ describe('When creating a new queue, ', function () {
         });
     });
 });
-
-//# sourceMappingURL=openq-queue-spec.js.map

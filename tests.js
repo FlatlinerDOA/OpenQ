@@ -1,3 +1,5 @@
+/// <reference path="types/common.d.ts" />
+// Initialize
 require('typescript-require');
 var j = require('jasmine-node');
 
@@ -44,4 +46,3 @@ var options = {
 
 console.log('Running all tests in ' + __dirname + '/spec');
 j.executeSpecsInFolder(options);
-//# sourceMappingURL=tests.js.map

@@ -1,3 +1,4 @@
+/// <reference path="types/common.d.ts" />
 function createService(repositoryFactory) {
     return new Service(repositoryFactory);
 }
@@ -36,6 +37,7 @@ exports.Qid = {
 
 var TableNames = {
     users: "table:users",
+    /** creates a table name by safe-concatenating string arguments */
     create: function () {
         var parts = [];
         for (var _i = 0; _i < (arguments.length - 0); _i++) {
@@ -53,6 +55,7 @@ var TableNames = {
     }
 };
 
+/** OpenQ service that hosts user inboxes */
 var Service = (function () {
     function Service(repositoryFactory) {
         this.repositoryFactory = repositoryFactory;
@@ -61,6 +64,7 @@ var Service = (function () {
     Service.prototype.start = function (callback) {
         this.usersTable = this.repositoryFactory(TableNames.users);
         this.usersTable.readAll('range', function (err, results) {
+            // TODO: Load out user accounts from the users repository
             callback(null);
         });
     };
@@ -106,6 +110,7 @@ var Service = (function () {
     };
 
     Service.prototype.removePublisher = function (publisher) {
+        // IMPROVE: Inefficient removal.
         this.publishers = this.publishers.filter(function (p) {
             return p !== publisher;
         });
@@ -160,6 +165,7 @@ var Queue = (function () {
 
                 var expectedQid = exports.Qid.First;
                 if (s) {
+                    // Subscription already exists for this message type, so do nothing??
                     callback(null);
                     return;
                 }
@@ -216,6 +222,7 @@ var Queue = (function () {
     };
 
     Queue.prototype.write = function (messages, callback) {
+        // TODO: Switch for known types to route to type specific handlers
         var completion = function (err) {
             if (err) {
                 callback(err);
@@ -257,6 +264,7 @@ var Queue = (function () {
     };
 
     Queue.prototype.getSubscription = function (subscriber, token, messageType, callback) {
+        // TODO: Url encode message types??
         var rangeKey = this.subscriptionKey(subscriber, messageType);
         this.subscriptions.readLast(rangeKey, function (err, s) {
             if (err) {
@@ -289,6 +297,7 @@ var Queue = (function () {
 })();
 exports.Queue = Queue;
 
+/** Sends a message to a subscriber via a direct HTTP POST to their configured address */
 var HttpPostPublisher = (function () {
     function HttpPostPublisher() {
     }
@@ -299,6 +308,7 @@ var HttpPostPublisher = (function () {
 })();
 exports.HttpPostPublisher = HttpPostPublisher;
 
+/** Invokes one or more functions to handle messages. If a handler returns true the message is longer processed. */
 var DispatchPublisher = (function () {
     function DispatchPublisher() {
         this.messageHandlers = {};
@@ -332,12 +342,15 @@ var DispatchPublisher = (function () {
 })();
 exports.DispatchPublisher = DispatchPublisher;
 
+/** For web clients that have started a long polling connection etc. */
 var SocketPublisher = (function () {
     function SocketPublisher(missedMessageRetriever) {
         if (typeof missedMessageRetriever === "undefined") { missedMessageRetriever = null; }
         this.missedMessageRetriever = missedMessageRetriever;
+        ////var s = require('socket.io');
     }
     SocketPublisher.prototype.addListener = function (subscriber, callback) {
+        // When a subscriber starts listening, we immediately start pushing them messages they've missed since they were last connected (if any).
         if (this.missedMessageRetriever) {
             this.missedMessageRetriever(subscriber, function (err, messages) {
                 if (err) {
@@ -354,5 +367,3 @@ var SocketPublisher = (function () {
     return SocketPublisher;
 })();
 exports.SocketPublisher = SocketPublisher;
-
-//# sourceMappingURL=openq.js.map

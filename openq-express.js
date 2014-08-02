@@ -1,3 +1,4 @@
+/// <reference path="types/common.d.ts" />
 var openq = require("./openq");
 var memoryRepo = require("./repository-memory");
 var express = require("express");
@@ -106,5 +107,3 @@ var OpenQExpressServer = (function () {
     return OpenQExpressServer;
 })();
 exports.OpenQExpressServer = OpenQExpressServer;
-
-//# sourceMappingURL=openq-express.js.map

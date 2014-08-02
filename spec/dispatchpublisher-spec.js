@@ -1,3 +1,5 @@
+/// <reference path="../types/common.d.ts" />
+/// <reference path="../types/jasmine.d.ts" />
 var openq = require('../openq');
 
 describe('When creating a new dispatch publisher, ', function () {
@@ -50,5 +52,3 @@ describe('When creating a new dispatch publisher, ', function () {
         });
     });
 });
-
-//# sourceMappingURL=dispatchpublisher-spec.js.map

@@ -1,3 +1,7 @@
+/// <reference path="../../types/jquery.d.ts" />
+/// <reference path="../../types/client.d.ts" />
+/// <reference path="../common/Navigation.ts"/>
+/// <reference path="HomeViewModel.ts"/>
 var rootVm;
 
 var RootViewModel = (function () {
