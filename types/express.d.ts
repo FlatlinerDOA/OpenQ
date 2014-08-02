@@ -218,7 +218,7 @@ interface ExpressServerRequest {
      *
      * @param size
      */
-    range(size: number): Array;
+    range(size: number): Array<any>;
 
     /**
      * Return an array of Accepted media types
@@ -235,7 +235,7 @@ interface ExpressServerRequest {
      *         type: 'text',
      *         subtype: 'html' } ]
      */
-    accepted: Array;
+    accepted: Array<any>;
 
     /**
      * Return an array of Accepted languages
@@ -246,7 +246,7 @@ interface ExpressServerRequest {
      *     Accept-Language: en;q=.5, en-us
      *     ['en-us', 'en']
      */
-    acceptedLanguages: Array;
+    acceptedLanguages: Array<string>;
 
     /**
      * Return an array of Accepted charsets
@@ -257,7 +257,7 @@ interface ExpressServerRequest {
      *     Accept-Charset: iso-8859-5;q=.2, unicode-1-1;q=0.8
      *     ['unicode-1-1', 'iso-8859-5']
      */
-    acceptedCharsets: Array;
+    acceptedCharsets: Array<string>;
 
     /**
      * Return the value of param `name` when present or `defaultValue`.
@@ -870,7 +870,7 @@ interface ExpressApplication {
      */
     param(name: string, fn: Function): ExpressApplication;
 
-    param(name: Array, fn: Function): ExpressApplication;
+    param(name: Array<any>, fn: Function): ExpressApplication;
 
     /**
      * Assign `setting` to `val`, or return `setting`'s value.
