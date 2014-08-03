@@ -37,11 +37,15 @@
             lock (this.syncRoot)
             {
                 this.online = false;
+                this.peers = quorumPeersList;
             }
 
+            // TODO: Load or Store cursor positions? 
+            // TODO: Is it part of the queue's responsibility to initialize this? 
+            // TODO: What if the queue's are out of sync?
+            
             lock (this.syncRoot)
             {
-                this.peers = quorumPeersList;
                 this.online = true;
             }
 
@@ -73,25 +77,20 @@
                 peerList = this.peers.ToDictionary(d => d.Id);
             }
 
+            await CommitValues(values, this.currentCursor.Version);
+
             foreach (var acceptedToken in accepted)
             {
                 // TODO: Validate accept tokens are valid and correspond to my peers.
                 // Let's determine if this will be an autocommit or a forward.
                 acceptCount++;
                 peerList.Remove(acceptedToken.PeerId);
-                accept.RequestId = acceptedToken.RequestId;
                 if (acceptCount >= minimumAcceptCount)
                 {
-                    // Just store and return an accept token
-                    await CommitValues(values, expectedVersion);
                     return accept;
                 }
             }
 
-            if (accept.RequestId == Guid.Empty)
-            {
-                accept.RequestId = Guid.NewGuid();
-            }
 
             var tokenList = new List<Cursor>(cursor) { accept };
             foreach (var peer in peerList.Values)
