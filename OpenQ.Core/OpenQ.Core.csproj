@@ -55,9 +55,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Cursor.cs" />
     <Compile Include="ConflictException.cs" />
     <Compile Include="DistributedQueue.cs" />
+    <Compile Include="IDistributedQueue.cs" />
     <Compile Include="IStorage.cs" />
+    <Compile Include="Peer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

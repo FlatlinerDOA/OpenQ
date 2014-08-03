@@ -3,10 +3,10 @@
     using System.Collections.Generic;
     using System.Threading.Tasks;
 
-    public interface IStorage<T>
+    public interface IStorage
     {
-        Task<T> LoadAsync(string path);
+        Task<T> LoadAsync<T>(string path);
 
-        Task SaveAsync(string path, T value);
+        Task SaveAsync<T>(string path, T value);
     }
 }

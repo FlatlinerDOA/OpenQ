@@ -2,11 +2,12 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Data;
     using System.Linq;
     using System.Reactive;
     using System.Threading.Tasks;
 
-    public class DistributedQueue<T>
+    public class DistributedQueue<T> : IDistributedQueue<T>
     {
         private readonly Guid id = Guid.NewGuid();
 
@@ -14,11 +15,15 @@
 
         private readonly string queue;
 
-        private readonly IStorage<T> storage;
+        private readonly IStorage storage;
 
         private IReadOnlyList<Peer> peers = new List<Peer>();
 
-        public DistributedQueue(string queue, IStorage<T> storage, byte[] privateKey)
+        private Cursor currentCursor = null;
+
+        private bool online = false;
+
+        public DistributedQueue(string queue, IStorage storage, byte[] privateKey)
         {
             this.queue = queue;
             this.storage = storage;
@@ -27,12 +32,20 @@
 
         ////public byte[] PublicKey { get; private set; }
 
-        public void SetPeers(IReadOnlyList<Peer> newPeersList)
+        public Task InitializeAsync(IReadOnlyList<Peer> quorumPeersList)
         {
             lock (this.syncRoot)
             {
-                this.peers = newPeersList;
+                this.online = false;
             }
+
+            lock (this.syncRoot)
+            {
+                this.peers = quorumPeersList;
+                this.online = true;
+            }
+
+            return Task.Delay(0);
         }
 
         /// <summary>
@@ -40,18 +53,22 @@
         /// </summary>
         /// <param name="values">A list of zero or more items. An empty list can be used to verify the current version of the queue without modification, 
         /// calling commit is not necessary in this case.</param>
-        /// <param name="expectedVersion">The expected version of the latest item in the queue, or zero if append semantics are desired.</param>
-        /// <param name="accepted">The list of responses for peers that have already accepted this request</param>
+        /// <param name="current">(Optional) The expected version of the latest item in the queue, or null if append semantics are desired.</param>
         /// <exception cref="ConflictException">Thrown if the queue has already been written to with that version with a different request id.</exception>
-        /// <returns>Returns an accept token</returns>
-        public async Task<AcceptToken> EnqueueAsync(IReadOnlyList<T> values, long expectedVersion, IReadOnlyList<AcceptToken> accepted)
+        /// <returns>Returns this peer's cursor post enqueue</returns>
+        public async Task<Cursor> EnqueueAsync(IReadOnlyList<T> values, Cursor current)
         {
             int acceptCount = 0;
             int minimumAcceptCount;
-            var accept = new AcceptToken { PeerId = this.id };
+            var accept = new Cursor { SubscriberId = this.id };
             Dictionary<Guid, Peer> peerList;
             lock (this.syncRoot)
             {
+                if (!this.online)
+                {
+                    throw new InvalidOperationException("This queue is offline");
+                }
+
                 minimumAcceptCount = (int)Math.Floor(this.peers.Count / 2M) + 1;
                 peerList = this.peers.ToDictionary(d => d.Id);
             }
@@ -76,7 +93,7 @@
                 accept.RequestId = Guid.NewGuid();
             }
 
-            var tokenList = new List<AcceptToken>(accepted) { accept };
+            var tokenList = new List<Cursor>(cursor) { accept };
             foreach (var peer in peerList.Values)
             {
                 var peerQueue = peer.Open<T>(this.queue);
@@ -97,7 +114,12 @@
             return accept;
         }
 
-        public Task<IReadOnlyList<T>> ReadQueueAsync(long start, long count)
+        public Task UpdateCursorAsync(Cursor cursor)
+        {
+            return Task.Delay(0);
+        }
+
+        public Task<IReadOnlyList<T>> ReadQueueAsync(long start, int count)
         {
             return Task.FromResult<IReadOnlyList<T>>(new List<T>());
         }
@@ -109,26 +131,5 @@
                 await this.storage.SaveAsync(this.queue + "/" + i, values[i]);
             }
         }
-    }
-
-    public class Peer
-    {
-        public Guid Id { get; set; }
-
-        public byte[] PublicKey { get; set; }
-
-        public DistributedQueue<T> Open<T>(string queue)
-        {
-            return null;
-        }
-    }
-
-    public sealed class AcceptToken
-    {
-        public Guid PeerId { get; set; }
-
-        public Guid RequestId { get; set; }
-
-        public byte[] Signature { get; set; }
     }
 }
