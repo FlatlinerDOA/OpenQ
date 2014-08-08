@@ -1,17 +1,18 @@
 ﻿namespace OpenQ.Core
 {
+    using System;
     using System.Collections.Generic;
     using System.Threading.Tasks;
 
-    public interface IDistributedQueue<T>
+    public interface IDistributedQueue<T> where T : IQueueMessage
     {
         #region Public Methods and Operators
 
-        Task<Cursor> EnqueueAsync(T[] values, Cursor cursor);
+        Task<Cursor> EnqueueAsync(IReadOnlyList<T> values, Cursor cursor, Guid[] excludePeerIds);
 
-        Task UpdateCursorAsync(Cursor cursor);
+        IObservable<Cursor> Accepted { get; }
 
-        Task<IReadOnlyList<T>> ReadQueueAsync(long start, int count);
+        Task<IReadOnlyList<T>> ReadQueueAsync(Cursor cursor, int count);
 
         #endregion
     }

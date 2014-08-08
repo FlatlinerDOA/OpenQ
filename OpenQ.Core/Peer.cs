@@ -14,7 +14,7 @@
 
         #region Public Methods and Operators
 
-        public DistributedQueue<T> Open<T>(string queue)
+        public DistributedQueue<T> Open<T>(string queue) where T : IQueueMessage
         {
             return null;
         }
