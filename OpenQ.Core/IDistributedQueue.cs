@@ -4,15 +4,15 @@
     using System.Collections.Generic;
     using System.Threading.Tasks;
 
-    public interface IDistributedQueue<T> where T : IQueueMessage
+    public interface IDistributedQueue
     {
         #region Public Methods and Operators
 
-        Task<Cursor> EnqueueAsync(IReadOnlyList<T> values, Cursor cursor, string[] excludePeerIds);
+        Task<Cursor> EnqueueAsync(IReadOnlyList<IQueueMessage> values, Cursor cursor, string[] excludePeerIds);
 
         IObservable<Cursor> Accepted { get; }
 
-        Task<IReadOnlyList<T>> ReadQueueAsync(Cursor cursor, int count);
+        Task<IReadOnlyList<IQueueMessage>> ReadQueueAsync(Cursor cursor, int count);
 
         #endregion
     }

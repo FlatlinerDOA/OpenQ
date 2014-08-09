@@ -68,6 +68,7 @@
     <Compile Include="FileStreamStorage.cs" />
     <Compile Include="IDistributedQueue.cs" />
     <Compile Include="IPeer.cs" />
+    <Compile Include="IPeerServer.cs" />
     <Compile Include="IQueueMessage.cs" />
     <Compile Include="IStorage.cs" />
     <Compile Include="PeerServer.cs" />

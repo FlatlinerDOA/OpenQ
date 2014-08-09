@@ -45,29 +45,13 @@
                             new PeerServer(new DictionaryStorage(this.test), this.test),
                         };
 
-            var router = new PeerRouter(this.peers);
-            router.Start(this.test);
+            var clients = this.peers.Select(p => new TestPeerClient(p)).ToList();
+            foreach (var peer in this.peers)
+            {
+                peer.StartAsync(clients);
+            }
         }
 
         #endregion
-    }
-
-    public sealed class PeerRouter
-    {
-        private readonly IReadOnlyList<IPeerServer> peers;
-
-        public PeerRouter(IReadOnlyList<IPeerServer> peers)
-        {
-            this.peers = peers;
-        }
-
-        public void Start(IScheduler scheduler)
-        {
-            foreach (var peer in this.peers)
-            {
-                var peerId = peer.Id;
-                peer.Configure(this.peers.Where(p => p.Id != peerId).ToList());
-            }
-        }
     }
 }

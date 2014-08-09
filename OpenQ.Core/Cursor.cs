@@ -31,6 +31,11 @@ namespace OpenQ.Core
             }
         }
 
+        public static Cursor Empty(string subscriber)
+        {
+            return new Cursor(subscriber, Guid.Empty, 0);
+        }
+
         #region Public Properties
 
         public Guid MessageId
@@ -106,5 +111,20 @@ namespace OpenQ.Core
         }
 
         #endregion
+
+        public bool IsCompatibleWith(Cursor desired)
+        {
+            if (desired.Sequence == 0)
+            {
+                return true;
+            }
+
+            if (this.MessageId == desired.MessageId)
+            {
+                return desired.Sequence == this.Sequence;
+            }
+
+            return desired.Sequence == this.Sequence + 1;
+        }
     }
 }

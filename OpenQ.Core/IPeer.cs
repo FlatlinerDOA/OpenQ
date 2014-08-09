@@ -1,7 +1,6 @@
 ﻿namespace OpenQ.Core
 {
     using System;
-    using System.Collections.Generic;
 
     public interface IPeer
     {
@@ -18,16 +17,10 @@
         /// <summary>
         /// 
         /// </summary>
-        /// <typeparam name="T"></typeparam>
         /// <param name="topic"></param>
         /// <returns></returns>
-        IDistributedQueue<T> Open<T>(string topic) where T : IQueueMessage;
+        IDistributedQueue Open(string topic);
 
         #endregion
-    }
-
-    public interface IPeerServer : IPeer
-    {
-        void Configure(IReadOnlyList<IPeer> quorumPeersList);
     }
 }

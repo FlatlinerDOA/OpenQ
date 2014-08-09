@@ -3,6 +3,9 @@
     using System;
     using System.Collections.Generic;
     using System.Reactive.Concurrency;
+    using System.Reactive.Disposables;
+    using System.Reactive.Linq;
+    using System.Threading.Tasks;
 
     public sealed class PeerServer : IPeerServer
     {
@@ -16,13 +19,15 @@
 
         private readonly IScheduler scheduler;
 
+        private readonly MultipleAssignmentDisposable subscriptions = new MultipleAssignmentDisposable();
+
         public PeerServer(IStorage storage, IScheduler scheduler)
         {
             this.storage = storage;
             this.scheduler = scheduler;
         }
 
-        public void Configure(IReadOnlyList<IPeer> quorumPeersList)
+        public Task StartAsync(IReadOnlyList<IPeer> quorumPeersList)
         {
             lock (this.syncRoot)
             {
@@ -30,11 +35,26 @@
                 this.peers = quorumPeersList;
             }
 
+            var d = new CompositeDisposable();
+            foreach (var peer in this.peers)
+            {
+                // TODO: Peer heartbeat checking for liveness.
+                d.Add(peer.Connect().Subscribe());
+            }
 
+            this.subscriptions.Disposable = d;
             lock (this.syncRoot)
             {
                 this.online = true;
             }
+
+            return Task.Delay(0);
+        }
+
+        public Task StopAsync()
+        {
+            this.subscriptions.Disposable = Disposable.Empty;
+            return Task.Delay(0);
         }
 
         #region Public Properties
@@ -47,21 +67,19 @@
 
         #region Public Methods and Operators
 
-        public Uri Address { get; private set; }
-
         public IObservable<long> Connect()
         {
-            throw new NotImplementedException();
+            return Observable.Timer(TimeSpan.FromSeconds(2), this.scheduler);
         }
 
-        public IDistributedQueue<T> Open<T>(string topic) where T : IQueueMessage
+        public IDistributedQueue Open(string topic)
         {
             if (!this.online)
             {
                 throw new InvalidOperationException("This peer is offline");
             }
 
-            var d = new DistributedQueue<T>(this.Id, topic, this.storage, this.scheduler);
+            var d = new DistributedQueue(this.Id, topic, this.storage, this.scheduler);
             d.Configure(this.peers);
             return d;
         }
