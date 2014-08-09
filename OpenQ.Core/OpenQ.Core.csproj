@@ -60,12 +60,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BinaryMessage.cs" />
     <Compile Include="Cursor.cs" />
     <Compile Include="ConflictException.cs" />
     <Compile Include="DictionaryStorage.cs" />
     <Compile Include="DistributedQueue.cs" />
+    <Compile Include="FileStreamStorage.cs" />
     <Compile Include="IDistributedQueue.cs" />
     <Compile Include="IPeer.cs" />
+    <Compile Include="IQueueMessage.cs" />
     <Compile Include="IStorage.cs" />
     <Compile Include="PeerServer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

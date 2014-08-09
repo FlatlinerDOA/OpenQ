@@ -7,6 +7,7 @@
     using System.Reactive.Concurrency;
     using System.Reactive.Linq;
     using System.Reactive.Subjects;
+    using System.Reactive.Threading.Tasks;
     using System.Threading;
     using System.Threading.Tasks;
 
@@ -17,7 +18,7 @@
 
         private readonly ReplaySubject<Cursor> accepted;
 
-        private readonly string id = Guid.NewGuid().ToString();
+        private readonly string id;
 
         private readonly string topic;
 
@@ -37,6 +38,7 @@
 
         public DistributedQueue(string peerId, string topic, IStorage storage, IScheduler scheduler)
         {
+            this.id = peerId;
             this.Scheduler = scheduler;
             this.topic = topic;
             this.storage = storage;
@@ -98,19 +100,14 @@
         /// <param name="excludePeerIds"></param>
         /// <exception cref="ConflictException">Thrown if the queue has already been written to with that version with a different request id.</exception>
         /// <returns>Returns this peer's cursor post enqueue</returns>
-        public async Task<Cursor> EnqueueAsync(IReadOnlyList<T> values, Cursor current, string[] excludePeerIds)
+        public Task<Cursor> EnqueueAsync(IReadOnlyList<T> values, Cursor current, string[] excludePeerIds)
         {
             int storeCount = 0;
             int minimumAcceptCount;
-            var accept = new Cursor { Subscriber = this.id };
+            var accept = new Cursor(this.id, current.MessageId, current.Sequence);
             IReadOnlyList<IPeer> peerList;
             lock (this.syncRoot)
             {
-                if (!this.online)
-                {
-                    throw new InvalidOperationException("This queue is offline");
-                }
-
                 minimumAcceptCount = (int)Math.Floor(this.peers.Count / 2M) + 1;
                 peerList = this.peers.Where(d => !excludePeerIds.Contains(d.Id)).ToList();
             }
@@ -135,15 +132,13 @@
                                         return Observable.Empty<Unit>();
                                     }
 
-                                    return Observable.FromAsync(c2 => this.storage.SaveAsync(this.topic + "/" + current.Version, current, c2));
+                                    return Observable.FromAsync(c2 => this.storage.SaveAsync(this.topic + "/" + current.Sequence, current, c2));
                                 })
                             select new Unit()));
 
-            stored.Merge(this.Scheduler).Subscribe(); 
+            stored.Merge(this.Scheduler).ToTask(); 
             return accept;
         }
-
-
 
         #endregion
 
@@ -153,15 +148,6 @@
         {
             return values.ToObservable().SelectMany(v => Observable.FromAsync(c => this.storage.SaveAsync(this.topic + "/" + v.MessageId, v, c)));
         }
-
-        #endregion
-    }
-
-    public interface IQueueMessage
-    {
-        #region Public Properties
-
-        Guid MessageId { get; }
 
         #endregion
     }

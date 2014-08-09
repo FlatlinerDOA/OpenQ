@@ -6,8 +6,8 @@
 
     public interface IStorage
     {
-        Task<T> LoadAsync<T>(string path, CancellationToken cancellation);
+        Task<IQueueMessage> LoadAsync(string path, CancellationToken cancellation);
 
-        Task SaveAsync<T>(string path, T value, CancellationToken cancellation);
+        Task SaveAsync(string path, IQueueMessage value, CancellationToken cancellation);
     }
 }

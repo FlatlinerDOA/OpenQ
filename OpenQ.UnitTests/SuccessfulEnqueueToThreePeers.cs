@@ -1,6 +1,8 @@
 ﻿namespace OpenQ.UnitTests
 {
     using System.Collections.Generic;
+    using System.Diagnostics;
+    using System.Linq;
     using System.Reactive;
     using System.Reactive.Concurrency;
 
@@ -42,16 +44,30 @@
                             new PeerServer(new DictionaryStorage(this.test), this.test),
                             new PeerServer(new DictionaryStorage(this.test), this.test),
                         };
+
+            var router = new PeerRouter(this.peers);
+            router.Start(this.test);
         }
 
         #endregion
     }
 
-    public class PeerRouter
+    public sealed class PeerRouter
     {
-        public PeerRouter(IReadOnlyList<IDistributedQueue<IQueueMessage>> queues)
+        private readonly IReadOnlyList<IPeerServer> peers;
+
+        public PeerRouter(IReadOnlyList<IPeerServer> peers)
         {
-            
+            this.peers = peers;
+        }
+
+        public void Start(IScheduler scheduler)
+        {
+            foreach (var peer in this.peers)
+            {
+                var peerId = peer.Id;
+                peer.Configure(this.peers.Where(p => p.Id != peerId).ToList());
+            }
         }
     }
 }

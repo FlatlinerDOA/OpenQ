@@ -13,7 +13,8 @@
 
     public sealed class DictionaryStorage : IStorage
     {
-        private Dictionary<string, object> values = new Dictionary<string, object>(); 
+        private readonly Dictionary<string, IQueueMessage> values = new Dictionary<string, IQueueMessage>(); 
+        
         private readonly IScheduler scheduler;
 
         public DictionaryStorage(IScheduler scheduler)
@@ -21,12 +22,12 @@
             this.scheduler = scheduler;
         }
 
-        public Task<T> LoadAsync<T>(string path, CancellationToken cancellation)
+        public Task<IQueueMessage> LoadAsync(string path, CancellationToken cancellation)
         {
-            return Observable.Return((T)this.values[path], this.scheduler).ToTask(cancellation);
+            return Observable.Return(this.values[path], this.scheduler).ToTask(cancellation);
         }
 
-        public Task SaveAsync<T>(string path, T value, CancellationToken cancellation)
+        public Task SaveAsync(string path, IQueueMessage value, CancellationToken cancellation)
         {
             return Observable.Defer(
                 () =>

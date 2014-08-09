@@ -76,6 +76,7 @@
     <Compile Include="Combinatorics\Permutations.cs" />
     <Compile Include="Combinatorics\SmallPrimeUtility.cs" />
     <Compile Include="Combinatorics\Variations.cs" />
+    <Compile Include="DistributedQueueSpec\SpecificationBase.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SuccessfulEnqueueToThreePeers.cs" />
   </ItemGroup>

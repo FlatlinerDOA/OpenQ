@@ -3,10 +3,8 @@
     using System;
     using System.Collections.Generic;
     using System.Reactive.Concurrency;
-    using System.Reactive.Subjects;
-    using System.Threading.Tasks;
 
-    public sealed class PeerServer : IPeer
+    public sealed class PeerServer : IPeerServer
     {
         private volatile bool online;
         
@@ -37,8 +35,6 @@
             {
                 this.online = true;
             }
-
-            return Task.Delay(0);
         }
 
         #region Public Properties
@@ -60,6 +56,11 @@
 
         public IDistributedQueue<T> Open<T>(string topic) where T : IQueueMessage
         {
+            if (!this.online)
+            {
+                throw new InvalidOperationException("This peer is offline");
+            }
+
             var d = new DistributedQueue<T>(this.Id, topic, this.storage, this.scheduler);
             d.Configure(this.peers);
             return d;

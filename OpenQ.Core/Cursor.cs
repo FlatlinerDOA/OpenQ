@@ -1,27 +1,73 @@
 namespace OpenQ.Core
 {
     using System;
+    using System.IO;
+    using System.Text;
+    using System.Threading;
+    using System.Threading.Tasks;
 
-    public sealed class Cursor
+    public struct Cursor : IQueueMessage
     {
-        public Cursor()
-        {
-        }
+        private readonly int sequence;
+
+        private readonly string subscriber;
+
+        private readonly Guid messageId;
 
         public Cursor(string subscriber, Guid messageId, int sequence)
         {
-            this.Subscriber = subscriber;
-            this.MessageId = messageId;
-            this.Sequence = sequence;
+            this.subscriber = subscriber;
+            this.messageId = messageId;
+            this.sequence = sequence;
+        }
+
+        public Cursor(Stream stream)
+        {
+            using (var r = new BinaryReader(stream, Encoding.UTF8, true))
+            {
+                this.messageId = new Guid(r.ReadBytes(16));
+                this.sequence = r.ReadInt32();
+                this.subscriber = r.ReadString();
+            }
         }
 
         #region Public Properties
 
-        public Guid MessageId { get; set; }
+        public Guid MessageId
+        {
+            get
+            {
+                return this.messageId;
+            }
+        }
 
-        public int Sequence { get; set; }
+        public Task WriteAsync(Stream output, CancellationToken cancellation)
+        {
+            using (var w = new BinaryWriter(output, Encoding.UTF8, true))
+            {
+                w.Write(this.MessageId.ToByteArray());
+                w.Write(this.Sequence);
+                w.Write(this.Subscriber);
+            }
 
-        public string Subscriber { get; set; }
+            return Task.Delay(0, cancellation);
+        }
+
+        public int Sequence
+        {
+            get
+            {
+                return this.sequence;
+            }
+        }
+
+        public string Subscriber
+        {
+            get
+            {
+                return this.subscriber;
+            }
+        }
 
         #endregion
 
@@ -35,10 +81,7 @@ namespace OpenQ.Core
             {
                 return false;
             }
-            if (ReferenceEquals(this, obj))
-            {
-                return true;
-            }
+
             return obj is Cursor && this.Equals((Cursor)obj);
         }
 
@@ -59,7 +102,7 @@ namespace OpenQ.Core
 
         private bool Equals(Cursor other)
         {
-            return string.Equals(this.SubscriberId, other.SubscriberId) && this.MessageId.Equals(other.MessageId) && this.Sequence == other.Sequence;
+            return string.Equals(this.Subscriber, other.Subscriber) && this.MessageId.Equals(other.MessageId) && this.Sequence == other.Sequence;
         }
 
         #endregion

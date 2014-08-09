@@ -8,7 +8,7 @@
     {
         #region Public Methods and Operators
 
-        Task<Cursor> EnqueueAsync(IReadOnlyList<T> values, Cursor cursor, Guid[] excludePeerIds);
+        Task<Cursor> EnqueueAsync(IReadOnlyList<T> values, Cursor cursor, string[] excludePeerIds);
 
         IObservable<Cursor> Accepted { get; }
 
