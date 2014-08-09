@@ -17,9 +17,9 @@
 
         private readonly ReplaySubject<Cursor> accepted;
 
-        private readonly Guid id = Guid.NewGuid();
+        private readonly string id = Guid.NewGuid().ToString();
 
-        private readonly string queue;
+        private readonly string topic;
 
         private readonly IStorage storage;
 
@@ -29,16 +29,16 @@
 
         private bool online = false;
 
-        private IReadOnlyList<Peer> peers = new List<Peer>();
+        private IReadOnlyList<IPeer> peers = new List<IPeer>();
 
         #endregion
 
         #region Constructors and Destructors
 
-        public DistributedQueue(string queue, IStorage storage, IScheduler scheduler)
+        public DistributedQueue(string peerId, string topic, IStorage storage, IScheduler scheduler)
         {
             this.Scheduler = scheduler;
-            this.queue = queue;
+            this.topic = topic;
             this.storage = storage;
             this.accepted = new ReplaySubject<Cursor>(this.Scheduler);
             // TODO: var cert = new X509Certificate2(privateKey);
@@ -48,7 +48,27 @@
 
         ////public byte[] PublicKey { get; private set; }
 
+        public void Configure(IReadOnlyList<IPeer> newPeerList)
+        {
+            lock (this.syncRoot)
+            {
+                this.peers = newPeerList;
+            }
+
+            // TODO: Load or Store cursor positions? 
+            // TODO: Is it part of the queue's responsibility to initialize this? 
+            // TODO: What if the queue's are out of sync?
+        }
+
         #region Public Properties
+
+        public string Id
+        {
+            get
+            {
+                return this.id;
+            }
+        }
 
         public IObservable<Cursor> Accepted
         {
@@ -78,12 +98,12 @@
         /// <param name="excludePeerIds"></param>
         /// <exception cref="ConflictException">Thrown if the queue has already been written to with that version with a different request id.</exception>
         /// <returns>Returns this peer's cursor post enqueue</returns>
-        public async Task<Cursor> EnqueueAsync(IReadOnlyList<T> values, Cursor current, Guid[] excludePeerIds)
+        public async Task<Cursor> EnqueueAsync(IReadOnlyList<T> values, Cursor current, string[] excludePeerIds)
         {
             int storeCount = 0;
             int minimumAcceptCount;
-            var accept = new Cursor { SubscriberId = this.id };
-            IReadOnlyList<Peer> peerList;
+            var accept = new Cursor { Subscriber = this.id };
+            IReadOnlyList<IPeer> peerList;
             lock (this.syncRoot)
             {
                 if (!this.online)
@@ -104,7 +124,7 @@
                     peer => from _ in Observable.FromAsync(
                             c =>
                             {
-                                var peerQueue = peer.Open<T>(this.queue);
+                                var peerQueue = peer.Open<T>(this.topic);
                                 return peerQueue.EnqueueAsync(values, current, excludePeerIds);
                             })
                             from __ in Observable.Defer(
@@ -115,7 +135,7 @@
                                         return Observable.Empty<Unit>();
                                     }
 
-                                    return Observable.FromAsync(c2 => this.storage.SaveAsync(this.queue + "/" + current.Version, current, c2));
+                                    return Observable.FromAsync(c2 => this.storage.SaveAsync(this.topic + "/" + current.Version, current, c2));
                                 })
                             select new Unit()));
 
@@ -123,25 +143,7 @@
             return accept;
         }
 
-        public Task InitializeAsync(IReadOnlyList<Peer> quorumPeersList)
-        {
-            lock (this.syncRoot)
-            {
-                this.online = false;
-                this.peers = quorumPeersList;
-            }
 
-            // TODO: Load or Store cursor positions? 
-            // TODO: Is it part of the queue's responsibility to initialize this? 
-            // TODO: What if the queue's are out of sync?
-
-            lock (this.syncRoot)
-            {
-                this.online = true;
-            }
-
-            return Task.Delay(0);
-        }
 
         #endregion
 
@@ -149,7 +151,7 @@
 
         private IObservable<Unit> StoreValuesAsync(IReadOnlyList<T> values)
         {
-            return values.ToObservable().SelectMany(v => Observable.FromAsync(c => this.storage.SaveAsync(this.queue + "/" + v.MessageId, v, c)));
+            return values.ToObservable().SelectMany(v => Observable.FromAsync(c => this.storage.SaveAsync(this.topic + "/" + v.MessageId, v, c)));
         }
 
         #endregion

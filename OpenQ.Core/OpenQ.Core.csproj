@@ -30,6 +30,11 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.Reactive.Testing, Version=2.2.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Rx-Testing.2.2.5\lib\net45\Microsoft.Reactive.Testing.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Reactive.Core, Version=2.2.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
@@ -57,17 +62,19 @@
   <ItemGroup>
     <Compile Include="Cursor.cs" />
     <Compile Include="ConflictException.cs" />
+    <Compile Include="DictionaryStorage.cs" />
     <Compile Include="DistributedQueue.cs" />
     <Compile Include="IDistributedQueue.cs" />
+    <Compile Include="IPeer.cs" />
     <Compile Include="IStorage.cs" />
-    <Compile Include="Peer.cs" />
+    <Compile Include="PeerServer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="DesignGoals.md" />
-    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="packages.config" />
     <None Include="PubSubQuorum.md" />
     <None Include="TwoPhaseCommit.md" />
   </ItemGroup>
