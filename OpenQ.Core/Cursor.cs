@@ -126,5 +126,15 @@ namespace OpenQ.Core
 
             return desired.Sequence == this.Sequence + 1;
         }
+
+        public override string ToString()
+        {
+            return string.Format("{0}[{1}] = {2}", this.Subscriber, this.Sequence, this.MessageId);
+        }
+
+        public Cursor ForSubscriber(string id)
+        {
+            return new Cursor(id, this.messageId, this.sequence);
+        }
     }
 }

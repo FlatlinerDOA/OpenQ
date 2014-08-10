@@ -20,10 +20,11 @@
             var list = new List<IQueueMessage>() { message };
 
             this.Scheduler.AdvanceTo(1);
-            await this.Queue.EnqueueAsync(list, Cursor.Empty("testclient"), new string[0]);
+            var result = await this.Queue.EnqueueAsync(list, new Cursor("testclient", message.MessageId, 0), new string[0]);
             this.Scheduler.AdvanceTo(2);
             var expected = new Cursor(this.Queue.Id, message.MessageId, 1);
-            this.AcceptedRecorder.Messages.AssertEqual(ReactiveTest.OnNext(1, expected));
+            this.AcceptedRecorder.Messages.AssertEqual(ReactiveTest.OnNext(2, expected));
+            Assert.AreEqual(result, expected);
         }
 
         #endregion

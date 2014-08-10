@@ -65,6 +65,7 @@
     <Compile Include="ConflictException.cs" />
     <Compile Include="DictionaryStorage.cs" />
     <Compile Include="DistributedQueue.cs" />
+    <Compile Include="EnqueueRequest.cs" />
     <Compile Include="FileStreamStorage.cs" />
     <Compile Include="IDistributedQueue.cs" />
     <Compile Include="IPeer.cs" />

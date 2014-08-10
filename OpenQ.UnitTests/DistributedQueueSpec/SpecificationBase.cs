@@ -29,6 +29,7 @@
             this.AcceptedRecorder = this.Scheduler.CreateObserver<Cursor>();
             this.Queue = new DistributedQueue("peerid", "topicid", new DictionaryStorage(this.Scheduler), this.Scheduler);
             this.Queue.Configure(this.GivenPeers());
+            this.Queue.Accepted.Subscribe(this.AcceptedRecorder);
         }
 
         #endregion

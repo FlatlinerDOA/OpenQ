@@ -24,22 +24,18 @@
 
         public Task<IQueueMessage> LoadAsync(string path, CancellationToken cancellation)
         {
-            return Observable.Return(this.values[path], this.scheduler).ToTask(cancellation);
+            return Task.FromResult(this.values[path]);
         }
 
         public Task SaveAsync(string path, IQueueMessage value, CancellationToken cancellation)
         {
-            return Observable.Defer(
-                () =>
-                {
-                    if (this.values.ContainsKey(path))
-                    {
-                        return Observable.Throw<Unit>(new IOException("Data already exists at that location"), this.scheduler);
-                    }
+            if (this.values.ContainsKey(path))
+            {
+                throw new ConflictException("Data already exists at that location");
+            }
 
-                    this.values[path] = value;
-                    return Observable.Return(new Unit(), this.scheduler);
-                }).ToTask(cancellation);
+            this.values[path] = value;
+            return Task.Delay(0, cancellation);
         }
     }
 }

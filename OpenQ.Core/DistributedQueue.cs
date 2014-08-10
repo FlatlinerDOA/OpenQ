@@ -100,48 +100,47 @@
         /// <summary>
         /// Enqueues zero or more values and returns an accept token.
         /// </summary>
-        /// <param name="values">A list of zero or more items. An empty list can be used to verify the current version of the queue without modification, 
-        /// calling commit is not necessary in this case.</param>
-        /// <param name="desired">(Optional) The expected version of the latest item in the queue, or null if append semantics are desired.</param>
-        /// <param name="excludePeerIds"></param>
         /// <exception cref="ConflictException">Thrown if the queue has already been written to with that version with a different request id.</exception>
         /// <returns>Returns this peer's cursor post enqueue</returns>
-        public async Task<Cursor> EnqueueAsync(IReadOnlyList<IQueueMessage> values, Cursor desired, string[] excludePeerIds)
+        public IObservable<Cursor> EnqueueAsync(EnqueueRequest request)
         {
-            if (!this.currentCursor.IsCompatibleWith(desired))
+            if (!this.currentCursor.IsCompatibleWith(request.DesiredCursor))
             {
-                throw new ConflictException(string.Format("Could not write to {0} ({1}) as {2} was at {3}", this.topic, desired.Sequence, this.Id, this.currentCursor.Sequence));
+                throw new ConflictException(string.Format("Could not write to {0} ({1}) as {2} was at {3}", this.topic, request.DesiredCursor.Sequence, this.Id, this.currentCursor.Sequence));
             }
 
             int storeCount = 0;
             int minimumAcceptCount;
             IReadOnlyList<IPeer> peerList;
+            var exclusionList = new HashSet<string>(request.ExcludePeerIds) { this.id };
             lock (this.syncRoot)
             {
                 minimumAcceptCount = (int)Math.Floor(this.peers.Count / 2M) + 1;
-                peerList = this.peers.Where(d => !excludePeerIds.Contains(d.Id)).ToList();
+                peerList = this.peers.Where(d => !exclusionList.Contains(d.Id)).ToList();
             }
 
             var stored = new List<IObservable<Cursor>>
                          {
-                             this.StoreValuesAsync(values).Select(c => this.currentCursor)
+                             this.StoreValuesAsync(request.Messages).Select(c => this.currentCursor)
                          };
+
+            var forwardRequest = new EnqueueRequest(request.DesiredCursor, request.Messages, exclusionList);
             stored.AddRange(
                 peerList.Select(
-                    peer => from remoteCursor in Observable.FromAsync(
+                    peer => from remoteCursor in Observable.Defer(
                             c =>
                             {
                                 var peerQueue = peer.Open(this.topic);
-                                return peerQueue.EnqueueAsync(values, desired, excludePeerIds);
+                                return peerQueue.EnqueueAsync(forwardRequest);
                             })
                             select remoteCursor));
 
-            await stored.Merge().Timeout(TimeSpan.FromSeconds(10)).SelectMany(
+            return stored.Merge().Timeout(TimeSpan.FromSeconds(10)).SelectMany(
                 t =>
                 {
-                    if (!t.IsCompatibleWith(desired))
+                    if (!t.IsCompatibleWith(request.DesiredCursor))
                     {
-                        throw new ConflictException(string.Format("Could not write to {0} ({1}) as {2} was at {3}", this.topic, desired.Sequence, t.Subscriber, t.Sequence));
+                        return Observable.Throw<Cursor>(new ConflictException(string.Format("Could not write to {0} ({1}) as {2} was at {3}", this.topic, request.DesiredCursor.Sequence, t.Subscriber, t.Sequence)));
                     }
 
                     if (Interlocked.Increment(ref storeCount) < minimumAcceptCount)
@@ -149,10 +148,9 @@
                         return Observable.Empty<Cursor>();
                     }
 
-                    var accept = new Cursor(this.id, desired.MessageId, desired.Sequence);
+                    var accept = request.DesiredCursor.ForSubscriber(this.id);
                     return this.WriteAcceptanceAsync(accept);
                 }); 
-            return this.currentCursor;
         }
 
         #endregion
