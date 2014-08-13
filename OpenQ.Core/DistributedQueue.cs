@@ -2,13 +2,11 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Data;
     using System.Linq;
     using System.Reactive;
     using System.Reactive.Concurrency;
     using System.Reactive.Linq;
     using System.Reactive.Subjects;
-    using System.Reactive.Threading.Tasks;
     using System.Threading;
     using System.Threading.Tasks;
 
@@ -28,11 +26,10 @@
 
         private Cursor currentCursor;
 
-        private bool online = false;
-
         private IReadOnlyList<IPeer> peers = new List<IPeer>();
 
-        private IReadOnlyList<Cursor> peerCursors = new List<Cursor>(); 
+        private IReadOnlyList<Cursor> peerCursors = new List<Cursor>();
+
         #endregion
 
         #region Constructors and Destructors
@@ -104,38 +101,40 @@
         /// <returns>Returns this peer's cursor post enqueue</returns>
         public IObservable<Cursor> EnqueueAsync(EnqueueRequest request)
         {
-            if (!this.currentCursor.IsCompatibleWith(request.DesiredCursor))
-            {
-                throw new ConflictException(string.Format("Could not write to {0} ({1}) as {2} was at {3}", this.topic, request.DesiredCursor.Sequence, this.Id, this.currentCursor.Sequence));
-            }
-
-            int storeCount = 0;
             int minimumAcceptCount;
+            Cursor proposedCursor;
             IReadOnlyList<IPeer> peerList;
             var exclusionList = new HashSet<string>(request.ExcludePeerIds) { this.id };
             lock (this.syncRoot)
             {
+                if (!this.currentCursor.IsCompatibleWith(request.DesiredCursor))
+                {
+                    throw new ConflictException(string.Format("Could not write to {0} ({1}) as {2} was at {3}", this.topic, request.DesiredCursor.Sequence, this.Id, this.currentCursor.Sequence));
+                }
+
                 minimumAcceptCount = (int)Math.Floor(this.peers.Count / 2M) + 1;
                 peerList = this.peers.Where(d => !exclusionList.Contains(d.Id)).ToList();
+                proposedCursor = this.currentCursor.Next(request.DesiredCursor.MessageId);
             }
 
+            int storeCount = 0;
             var stored = new List<IObservable<Cursor>>
                          {
                              this.StoreValuesAsync(request.Messages).Select(c => this.currentCursor)
                          };
 
-            var forwardRequest = new EnqueueRequest(request.DesiredCursor, request.Messages, exclusionList);
+            var forwardRequest = new EnqueueRequest(proposedCursor, request.Messages, exclusionList);
             stored.AddRange(
                 peerList.Select(
                     peer => from remoteCursor in Observable.Defer(
-                            c =>
+                            () =>
                             {
                                 var peerQueue = peer.Open(this.topic);
                                 return peerQueue.EnqueueAsync(forwardRequest);
                             })
                             select remoteCursor));
 
-            return stored.Merge().Timeout(TimeSpan.FromSeconds(10)).SelectMany(
+            return stored.Merge().Timeout(TimeSpan.FromSeconds(100)).SelectMany(
                 t =>
                 {
                     if (!t.IsCompatibleWith(request.DesiredCursor))
@@ -143,13 +142,12 @@
                         return Observable.Throw<Cursor>(new ConflictException(string.Format("Could not write to {0} ({1}) as {2} was at {3}", this.topic, request.DesiredCursor.Sequence, t.Subscriber, t.Sequence)));
                     }
 
-                    if (Interlocked.Increment(ref storeCount) < minimumAcceptCount)
+                    if (Interlocked.Increment(ref storeCount) == minimumAcceptCount)
                     {
-                        return Observable.Empty<Cursor>();
+                        return this.WriteAcceptanceAsync(proposedCursor);
                     }
 
-                    var accept = request.DesiredCursor.ForSubscriber(this.id);
-                    return this.WriteAcceptanceAsync(accept);
+                    return Observable.Empty<Cursor>();
                 }); 
         }
 
@@ -159,9 +157,13 @@
 
         private IObservable<Cursor> WriteAcceptanceAsync(Cursor cursor)
         {
-            return Observable.FromAsync(c2 => this.storage.SaveAsync(this.topic + "/" + cursor.Sequence, cursor, c2)).Select(_ =>
+            return Observable.FromAsync(c2 => this.storage.SaveAsync(this.topic + "/c/" + cursor.Sequence, cursor, c2)).Select(_ =>
             {
-                this.currentCursor = cursor;
+                lock (this.syncRoot)
+                {
+                    this.currentCursor = cursor;
+                }
+
                 this.accepted.OnNext(cursor);
                 return cursor;
             });
@@ -169,7 +171,7 @@
 
         private IObservable<Unit> StoreValuesAsync(IReadOnlyList<IQueueMessage> values)
         {
-            return values.ToObservable().SelectMany(v => Observable.FromAsync(c => this.storage.SaveAsync(this.topic + "/" + v.MessageId, v, c)));
+            return values.ToObservable().SelectMany(v => Observable.FromAsync(c => this.storage.SaveAsync(this.topic + "/m/" + v.MessageId, v, c)));
         }
 
         #endregion

@@ -132,9 +132,14 @@ namespace OpenQ.Core
             return string.Format("{0}[{1}] = {2}", this.Subscriber, this.Sequence, this.MessageId);
         }
 
-        public Cursor ForSubscriber(string id)
+        public Cursor ForSubscriber(string subscriberId)
         {
-            return new Cursor(id, this.messageId, this.sequence);
+            return new Cursor(subscriberId, this.messageId, this.sequence);
+        }
+
+        public Cursor Next(Guid newMessageId)
+        {
+            return new Cursor(this.subscriber, newMessageId, this.sequence + 1);
         }
     }
 }

@@ -15,6 +15,7 @@
         {
             this.desiredCursor = desiredCursor;
             this.messages = messages;
+            this.excludePeerIds = new string[0];
         }
 
         public EnqueueRequest(Cursor desiredCursor, IEnumerable<IQueueMessage> messages, params string[] excludePeerIds)

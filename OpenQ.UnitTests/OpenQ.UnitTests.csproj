@@ -77,6 +77,9 @@
     <Compile Include="Combinatorics\SmallPrimeUtility.cs" />
     <Compile Include="Combinatorics\Variations.cs" />
     <Compile Include="DistributedQueueSpec\EnqueueingOneMessage\WhenNoPeerSynchronisationIsNecessary.cs" />
+    <Compile Include="DistributedQueueSpec\EnqueueingOneMessage\WhenThreeNodesMustSynchronise.cs" />
+    <Compile Include="DistributedQueueSpec\EnqueueingSpecification.cs" />
+    <Compile Include="DistributedQueueSpec\GivenTwoPeers.cs" />
     <Compile Include="DistributedQueueSpec\GivenZeroPeers.cs" />
     <Compile Include="DistributedQueueSpec\SpecificationBase.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -84,6 +87,7 @@
     <Compile Include="TestDistributedQueueClient.cs" />
     <Compile Include="TestMessage.cs" />
     <Compile Include="TestPeerClient.cs" />
+    <Compile Include="TestSimulatedPeerClient.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\OpenQ.Core\OpenQ.Core.csproj">
@@ -100,6 +104,7 @@
     <Folder Include="DistributedQueueSpec\DroppedMessage\" />
     <Folder Include="DistributedQueueSpec\FailureToOpenSinglePeer\" />
     <Folder Include="DistributedQueueSpec\OutOfOrderMessageDelivery\" />
+    <Folder Include="DistributedQueueSpec\OverlappedWritesOnTwoPeers\" />
     <Folder Include="DistributedQueueSpec\PeerEnqueueTimeout\" />
     <Folder Include="DistributedQueueSpec\SingleNodePartition\" />
     <Folder Include="DistributedQueueSpec\TwoNodePartition\" />

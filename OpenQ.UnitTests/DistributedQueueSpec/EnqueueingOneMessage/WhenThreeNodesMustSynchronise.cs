@@ -1,5 +1,6 @@
 ﻿namespace OpenQ.UnitTests.DistributedQueueSpec.EnqueueingOneMessage
 {
+    using System;
     using System.Collections.Generic;
     using System.Reactive.Linq;
     using System.Threading.Tasks;
@@ -10,25 +11,24 @@
     using OpenQ.Core;
 
     [TestClass]
-    public sealed class WhenNoPeerSynchronisationIsNecessary : GivenZeroPeers
+    public sealed class WhenTwoNodesMustSynchronise : GivenTwoPeers
     {
         private static readonly TestMessage Message = new TestMessage(1, "data");
 
         #region Public Methods and Operators
 
         [TestMethod]
-        public void AcceptanceComesImmediatelyAfterResponse()
+        public void AcceptanceOccursImmediatelyAfterResponse()
         {
-            this.AcceptedRecorder.Messages.AssertEqual(
-                ReactiveTest.OnNext(2, new Cursor(this.Queue.Id, Message.MessageId, 1)));
+            this.AcceptedRecorder.Messages.AssertEqual(ReactiveTest.OnNext(3, new Cursor(this.Queue.Id, Message.MessageId, 1)));
         }
 
         [TestMethod]
-        public void TheResponseIsImmediate()
+        public void ResponseComesAfterOnePeerStores()
         {
             this.ResponseRecorder.Messages.AssertEqual(
-                ReactiveTest.OnNext(1, new Cursor(this.Queue.Id, Message.MessageId, 1)),
-                ReactiveTest.OnCompleted<Cursor>(1));
+                ReactiveTest.OnNext(2, new Cursor(this.Queue.Id, Message.MessageId, 1)),
+                ReactiveTest.OnCompleted<Cursor>(2));
         }
 
         #endregion

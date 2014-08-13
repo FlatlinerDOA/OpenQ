@@ -4,7 +4,7 @@
 
     using OpenQ.Core;
 
-    public abstract class GivenZeroPeers : SpecificationBase
+    public abstract class GivenZeroPeers : EnqueueingSpecification
     {
         #region Methods
 

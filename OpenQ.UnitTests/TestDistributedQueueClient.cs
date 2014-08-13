@@ -2,23 +2,31 @@ namespace OpenQ.UnitTests
 {
     using System;
     using System.Collections.Generic;
+    using System.Reactive.Concurrency;
+    using System.Reactive.Linq;
     using System.Threading.Tasks;
 
     using OpenQ.Core;
 
     public sealed class TestDistributedQueueClient : IDistributedQueue
     {
+        #region Fields
+
         private readonly IDistributedQueue queue;
 
-        public TestDistributedQueueClient(IDistributedQueue queue)
+        #endregion
+
+        #region Constructors and Destructors
+
+        public TestDistributedQueueClient(IDistributedQueue queue, IScheduler scheduler)
         {
+            this.Scheduler = scheduler;
             this.queue = queue;
         }
 
-        public Task<Cursor> EnqueueAsync(IReadOnlyList<IQueueMessage> values, Cursor cursor, string[] excludePeerIds)
-        {
-            return this.queue.EnqueueAsync(values, cursor, excludePeerIds);
-        }
+        #endregion
+
+        #region Public Properties
 
         public IObservable<Cursor> Accepted
         {
@@ -28,9 +36,23 @@ namespace OpenQ.UnitTests
             }
         }
 
+        public IScheduler Scheduler { get; private set; }
+
+        #endregion
+
+        #region Public Methods and Operators
+
+        public IObservable<Cursor> EnqueueAsync(EnqueueRequest request)
+        {
+            return Observable.Defer(() => this.queue.EnqueueAsync(request).SubscribeOn(this.Scheduler));
+        }
+
         public Task<IReadOnlyList<IQueueMessage>> ReadQueueAsync(Cursor cursor, int count)
         {
+            // TODO: return Observable.Defer(() => this.queue.ReadQueueAsync(cursor, count).SubscribeOn(this.Scheduler));
             return this.queue.ReadQueueAsync(cursor, count);
         }
+
+        #endregion
     }
 }
