@@ -1,35 +1,34 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace OpenQ.Server
+﻿namespace OpenQ.Server
 {
+    using System.Linq;
+
     public sealed class RunServerJob : ICommandLineJob
     {
+        #region Constructors and Destructors
+
         public RunServerJob()
         {
             this.Required = new[] { "run" };
             this.Optional = new[] { "port" };
         }
 
-        public string[] Required { get; private set; }
+        #endregion
+
+        #region Public Properties
 
         public string[] Optional { get; private set; }
+
+        public string[] Required { get; private set; }
+
+        #endregion
+
+        #region Public Methods and Operators
 
         public int Start(ILookup<string, string> args)
         {
             return 0;
         }
-    }
 
-    public interface ICommandLineJob
-    {
-        string[] Required { get; }
-
-        string[] Optional { get; }
-
-        int Start(ILookup<string, string> args);
+        #endregion
     }
 }
