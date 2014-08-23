@@ -92,3 +92,4 @@ var SignupFormViewModel = (function () {
     };
     return SignupFormViewModel;
 })();
+//# sourceMappingURL=SignupFormViewModel.js.map

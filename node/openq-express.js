@@ -107,3 +107,4 @@ var OpenQExpressServer = (function () {
     return OpenQExpressServer;
 })();
 exports.OpenQExpressServer = OpenQExpressServer;
+//# sourceMappingURL=openq-express.js.map

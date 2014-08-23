@@ -53,3 +53,4 @@ describe('When setting up a user with an inbox, ', function () {
         }
     });
 });
+//# sourceMappingURL=sendingmessages.js.map

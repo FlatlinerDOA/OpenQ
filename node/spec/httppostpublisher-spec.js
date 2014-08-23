@@ -40,3 +40,4 @@ describe('When creating a new http post publisher, ', function () {
     it('then the result is false', () => expect(result).toBe(false));
     });*/
 });
+//# sourceMappingURL=httppostpublisher-spec.js.map

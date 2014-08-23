@@ -367,3 +367,4 @@ var SocketPublisher = (function () {
     return SocketPublisher;
 })();
 exports.SocketPublisher = SocketPublisher;
+//# sourceMappingURL=openq.js.map

@@ -199,3 +199,4 @@ describe('Given twitter\'s 340 million 500byte messages per day, running on AWS,
         expect(cost.totalCost).toBeLessThan(3000);
     });
 });
+//# sourceMappingURL=telemetry-spec.js.map

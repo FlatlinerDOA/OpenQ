@@ -46,3 +46,4 @@ var options = {
 
 console.log('Running all tests in ' + __dirname + '/spec');
 j.executeSpecsInFolder(options);
+//# sourceMappingURL=tests.js.map

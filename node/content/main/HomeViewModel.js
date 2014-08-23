@@ -15,3 +15,4 @@ var HomeViewModel = (function () {
     };
     return HomeViewModel;
 })();
+//# sourceMappingURL=HomeViewModel.js.map

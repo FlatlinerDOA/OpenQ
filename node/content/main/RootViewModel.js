@@ -24,3 +24,4 @@ $().ready(function () {
     rootVm = new RootViewModel();
     ko.applyBindings(rootVm);
 });
+//# sourceMappingURL=RootViewModel.js.map
