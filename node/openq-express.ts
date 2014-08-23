@@ -25,7 +25,7 @@ export class OpenQExpressServer {
     }
 
     public listen(hostName: string, port: number) {
-        console.log('OpenQ web server listening on http://' + hostName + ':' + port + '/');
+        console.log('Listening on http://' + hostName + ':' + port + '/');
         this.app.listen(port);
     }
     
@@ -84,10 +84,10 @@ export class OpenQExpressServer {
                 return;
             }
 
-            user.queues[queue].write(req.body, (err:any) => {
+            user.queues[queue].write(req.body, (err: any) => {
                 this.end(err, res);
             });
-        })
+        });
     }
 
     private getMessages(req: ExpressServerRequest, res: ExpressServerResponse) {

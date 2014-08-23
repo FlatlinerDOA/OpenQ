@@ -21,7 +21,7 @@ var OpenQExpressServer = (function () {
         this.initializePublishers();
     }
     OpenQExpressServer.prototype.listen = function (hostName, port) {
-        console.log('OpenQ web server listening on http://' + hostName + ':' + port + '/');
+        console.log('Listening on http://' + hostName + ':' + port + '/');
         this.app.listen(port);
     };
 
