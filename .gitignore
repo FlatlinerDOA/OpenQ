@@ -164,3 +164,5 @@ pip-log.txt
 
 node_modules*/
 [Pp]ackages*/
+node/node_modules*/
+node/[Pp]ackages*/

@@ -181,10 +181,10 @@
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
   </PropertyGroup>
   <PropertyGroup>
-    <RootNamespace>OpenQ</RootNamespace>
+    <RootNamespace>OpenQ.Node</RootNamespace>
   </PropertyGroup>
   <PropertyGroup>
-    <AssemblyName>OpenQ</AssemblyName>
+    <AssemblyName>OpenQ.Node</AssemblyName>
   </PropertyGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(VSToolsPath)\WebApplications\Microsoft.WebApplication.targets" Condition="'$(VSToolsPath)' != ''" />
