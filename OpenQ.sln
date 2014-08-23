@@ -1,13 +1,15 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.30501.0
+VisualStudioVersion = 12.0.30723.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenQ", "OpenQ.csproj", "{DEA5CACF-210B-4D42-9D4C-1704460F3F16}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenQ.Core", "OpenQ.Core\OpenQ.Core.csproj", "{AABE6747-29B5-4D40-8D70-C36BD7230EAD}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenQ.UnitTests", "OpenQ.UnitTests\OpenQ.UnitTests.csproj", "{6ADB8D08-5CFD-45F3-B710-8954A2AC2464}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenQ.Server", "OpenQ.Server\OpenQ.Server.csproj", "{02E11621-5EF0-47C6-B925-40DB08BE9ECB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,6 +29,10 @@ Global
 		{6ADB8D08-5CFD-45F3-B710-8954A2AC2464}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6ADB8D08-5CFD-45F3-B710-8954A2AC2464}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6ADB8D08-5CFD-45F3-B710-8954A2AC2464}.Release|Any CPU.Build.0 = Release|Any CPU
+		{02E11621-5EF0-47C6-B925-40DB08BE9ECB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{02E11621-5EF0-47C6-B925-40DB08BE9ECB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{02E11621-5EF0-47C6-B925-40DB08BE9ECB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{02E11621-5EF0-47C6-B925-40DB08BE9ECB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
