@@ -32,17 +32,33 @@
             this.Scheduler = new TestScheduler();
             this.AcceptedRecorder = this.Scheduler.CreateObserver<Cursor>();
             this.SaveRecorder = this.Scheduler.CreateObserver<Tuple<string, IQueueMessage>>();
+            this.ConnectionRecorder = this.Scheduler.CreateObserver<long>();
             this.Storage = new DictionaryStorage(this.Scheduler);
-            this.Queue = new DistributedQueue("node1", "topicid", this.Storage, this.Scheduler);
-            this.Queue.Configure(this.GivenPeers());
+            this.Queue = this.GivenQueue();
+            this.Peers = this.GivenPeers();
+
+            foreach (var p in this.Peers)
+            {
+                p.Connect().Subscribe(this.ConnectionRecorder);
+            }
 
             using (this.Storage.Saves.Subscribe(this.SaveRecorder))
             {
                 using (this.Queue.Accepted.Subscribe(this.AcceptedRecorder))
                 {
+                    this.Queue.Configure(this.Peers);
                     this.RunTest();
                 }
             }
+        }
+
+        public IObserver<long> ConnectionRecorder { get; set; }
+
+        public IReadOnlyList<IPeer> Peers { get; set; }
+
+        protected virtual DistributedQueue GivenQueue()
+        {
+            return new DistributedQueue("node1", "topic", this.Storage, this.Scheduler);
         }
 
         public DictionaryStorage Storage { get; set; }

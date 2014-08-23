@@ -79,8 +79,10 @@
     <Compile Include="DistributedQueueSpec\EnqueueingOneMessage\WhenNoPeerSynchronisationIsNecessary.cs" />
     <Compile Include="DistributedQueueSpec\EnqueueingOneMessage\WhenThreeNodesMustSynchronise.cs" />
     <Compile Include="DistributedQueueSpec\EnqueueingSpecification.cs" />
-    <Compile Include="DistributedQueueSpec\GivenTwoPeers.cs" />
+    <Compile Include="DistributedQueueSpec\GivenAThreeNodeQuorum.cs" />
     <Compile Include="DistributedQueueSpec\GivenZeroPeers.cs" />
+    <Compile Include="DistributedQueueSpec\SingleNodePartition\WhenQuorumCannotBeAchieved.cs" />
+    <Compile Include="DistributedQueueSpec\SingleNodePartition\WhenQuorumHasBeenAchievedOnTheOppositeSideOfAPartition.cs" />
     <Compile Include="DistributedQueueSpec\SpecificationBase.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SuccessfulEnqueueToThreePeers.cs" />
@@ -106,7 +108,6 @@
     <Folder Include="DistributedQueueSpec\OutOfOrderMessageDelivery\" />
     <Folder Include="DistributedQueueSpec\OverlappedWritesOnTwoPeers\" />
     <Folder Include="DistributedQueueSpec\PeerEnqueueTimeout\" />
-    <Folder Include="DistributedQueueSpec\SingleNodePartition\" />
     <Folder Include="DistributedQueueSpec\TwoNodePartition\" />
   </ItemGroup>
   <Choose>

@@ -2,6 +2,7 @@ namespace OpenQ.UnitTests
 {
     using System;
     using System.Collections.Generic;
+    using System.Reactive;
     using System.Reactive.Concurrency;
     using System.Reactive.Linq;
     using System.Threading.Tasks;
@@ -38,13 +39,20 @@ namespace OpenQ.UnitTests
 
         public IScheduler Scheduler { get; private set; }
 
+        public bool Connected { get; set; }
+
         #endregion
 
         #region Public Methods and Operators
 
         public IObservable<Cursor> EnqueueAsync(EnqueueRequest request)
         {
-            return Observable.Defer(() => this.queue.EnqueueAsync(request).SubscribeOn(this.Scheduler));
+            if (this.Connected)
+            {
+                return Observable.Defer(() => this.queue.EnqueueAsync(request).SubscribeOn(this.Scheduler));
+            }
+
+            return Observable.Never<Cursor>();
         }
 
         public Task<IReadOnlyList<IQueueMessage>> ReadQueueAsync(Cursor cursor, int count)

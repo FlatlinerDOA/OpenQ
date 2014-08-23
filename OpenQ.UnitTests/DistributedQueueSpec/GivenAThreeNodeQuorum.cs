@@ -4,7 +4,7 @@
 
     using OpenQ.Core;
 
-    public abstract class GivenTwoPeers : EnqueueingSpecification
+    public abstract class GivenAThreeNodeQuorum : EnqueueingSpecification
     {
         #region Methods
 

@@ -131,7 +131,7 @@
                             {
                                 var peerQueue = peer.Open(this.topic);
                                 return peerQueue.EnqueueAsync(forwardRequest);
-                            })
+                            }).DefaultIfEmpty(Cursor.Empty(peer.Id))
                             select remoteCursor));
 
             return stored.Merge().Timeout(TimeSpan.FromSeconds(100)).SelectMany(

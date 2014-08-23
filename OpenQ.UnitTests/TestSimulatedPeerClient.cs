@@ -22,6 +22,10 @@
 
         #region Public Properties
 
+        public bool Connected { get; set; }
+
+        public int? DisconnectAtSchedule { get; set; }
+
         public string Id { get; private set; }
 
         public IList<long> OnConnect { get; private set; }
@@ -34,12 +38,26 @@
 
         public IObservable<long> Connect()
         {
-            return Observable.Start(() => this.Scheduler.Now.Ticks, this.Scheduler);
+            if (this.DisconnectAtSchedule.HasValue)
+            {
+                Observable.Timer(new DateTimeOffset(this.DisconnectAtSchedule.Value, TimeSpan.Zero)).Subscribe(
+                    _ =>
+                    {
+                        this.Connected = false;
+                    });
+            }
+
+            return Observable.Start(() => this.Scheduler.Now.Ticks, this.Scheduler).Do(_ => this.Connected = true);
         }
 
         public IDistributedQueue Open(string topic)
         {
-            return new TestDistributedQueueClient(new DistributedQueue(this.Id, topic, new DictionaryStorage(this.Scheduler), this.Scheduler), this.Scheduler);
+            return new TestDistributedQueueClient(
+                new DistributedQueue(this.Id, topic, new DictionaryStorage(this.Scheduler), this.Scheduler),
+                this.Scheduler)
+                   {
+                       Connected = this.Connected
+                   };
         }
 
         #endregion

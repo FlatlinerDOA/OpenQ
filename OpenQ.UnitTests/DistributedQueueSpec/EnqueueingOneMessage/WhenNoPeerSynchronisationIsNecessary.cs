@@ -24,7 +24,7 @@
         }
 
         [TestMethod]
-        public void TheResponseIsImmediate()
+        public void TheResponseComesAfterStorage()
         {
             this.ResponseRecorder.Messages.AssertEqual(
                 ReactiveTest.OnNext(1, new Cursor(this.Queue.Id, Message.MessageId, 1)),
@@ -40,7 +40,7 @@
 
         public override EnqueueRequest When()
         {
-            return new EnqueueRequest(new Cursor("testclient", Message.MessageId, 0), Message);
+            return new EnqueueRequest(new Cursor("client", Message.MessageId, 0), Message);
         }
     }
 }
