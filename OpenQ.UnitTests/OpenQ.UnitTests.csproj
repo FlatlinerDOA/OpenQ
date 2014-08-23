@@ -98,9 +98,6 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
     <Folder Include="DistributedQueueSpec\DiskFailureOnRead\" />
     <Folder Include="DistributedQueueSpec\DiskFailureOnWrite\" />
     <Folder Include="DistributedQueueSpec\DroppedMessage\" />
@@ -109,6 +106,9 @@
     <Folder Include="DistributedQueueSpec\OverlappedWritesOnTwoPeers\" />
     <Folder Include="DistributedQueueSpec\PeerEnqueueTimeout\" />
     <Folder Include="DistributedQueueSpec\TwoNodePartition\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">

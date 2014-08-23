@@ -1,6 +1,9 @@
 ﻿namespace OpenQ.Server
 {
+    using System;
     using System.Linq;
+
+    using Microsoft.Owin.Hosting;
 
     public sealed class RunServerJob : ICommandLineJob
     {
@@ -8,8 +11,8 @@
 
         public RunServerJob()
         {
-            this.Required = new[] { "run" };
-            this.Optional = new[] { "port" };
+            this.Required = new[] { "start" };
+            this.Optional = new[] { "port", "hostname" };
         }
 
         #endregion
@@ -26,6 +29,15 @@
 
         public int Start(ILookup<string, string> args)
         {
+            var host = args["hostname"].DefaultIfEmpty("localhost").FirstOrDefault();
+            var port = args["port"].DefaultIfEmpty("8000").FirstOrDefault();
+            var url = string.Format("http://{0}:{1}", host, port);
+            using (WebApp.Start<Startup>(url))
+            {
+                Console.WriteLine("Listening on " + url);
+                Console.ReadLine();
+            }
+
             return 0;
         }
 
