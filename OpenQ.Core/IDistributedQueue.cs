@@ -4,6 +4,8 @@
     using System.Collections.Generic;
     using System.Threading.Tasks;
 
+    using OpenQ.Core.Messages;
+
     public interface IDistributedQueue
     {
         #region Public Methods and Operators

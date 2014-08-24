@@ -5,6 +5,8 @@
     using System.Threading;
     using System.Threading.Tasks;
 
+    using OpenQ.Core.Messages;
+
     public sealed class FileStreamStorage : IStorage
     {
         public const int BufferSize = 4096;

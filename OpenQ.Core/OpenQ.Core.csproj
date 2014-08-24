@@ -59,12 +59,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BinaryMessage.cs" />
-    <Compile Include="Cursor.cs" />
+    <Compile Include="Messages\BinaryMessage.cs" />
+    <Compile Include="Messages\Cursor.cs" />
     <Compile Include="ConflictException.cs" />
     <Compile Include="DictionaryStorage.cs" />
     <Compile Include="DistributedQueue.cs" />
-    <Compile Include="EnqueueRequest.cs" />
+    <Compile Include="Messages\EnqueueRequest.cs" />
     <Compile Include="FileStreamStorage.cs" />
     <Compile Include="IDistributedQueue.cs" />
     <Compile Include="IPeer.cs" />

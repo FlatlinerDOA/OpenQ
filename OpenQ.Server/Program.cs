@@ -6,14 +6,11 @@
 
     public static class Program
     {
-        #region Methods
+        #region Public Methods and Operators
 
         public static int Main(string[] args)
         {
-            var possibleJobs = new ICommandLineJob[]
-                               {
-                                   new RunServerJob()
-                               };
+            var possibleJobs = new ICommandLineJob[] { new RunServerJob() };
 
             var result = ParseIntoLookup(args);
             var matchingJobs = possibleJobs.Where(j => j.Required.All(result.Contains)).ToList();
@@ -34,8 +31,11 @@
             }
 
             return 0;
-
         }
+
+        #endregion
+
+        #region Methods
 
         /// <summary>
         /// Okay so not my finest code, but it parses command line arguments and switches into a lookup.

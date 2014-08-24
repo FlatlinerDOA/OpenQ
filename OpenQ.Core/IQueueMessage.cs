@@ -11,6 +11,8 @@ namespace OpenQ.Core
 
         Guid MessageId { get; }
 
+        string MessageType { get; }
+
         #endregion
 
         Task WriteAsync(Stream output, CancellationToken cancellation);

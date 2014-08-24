@@ -1,4 +1,4 @@
-﻿namespace OpenQ.Core
+﻿namespace OpenQ.Core.Messages
 {
     using System;
     using System.IO;

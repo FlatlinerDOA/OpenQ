@@ -1,4 +1,4 @@
-namespace OpenQ.Core
+namespace OpenQ.Core.Messages
 {
     using System;
     using System.IO;
@@ -6,8 +6,13 @@ namespace OpenQ.Core
     using System.Threading;
     using System.Threading.Tasks;
 
+    /// <summary>
+    /// Identifies a cursor position of a queue and the message id it refers to.
+    /// </summary>
     public struct Cursor : IQueueMessage
     {
+        public const string Type = "openq:cursor";
+        
         private readonly int sequence;
 
         private readonly string subscriber;
@@ -43,6 +48,14 @@ namespace OpenQ.Core
             get
             {
                 return this.messageId;
+            }
+        }
+
+        public string MessageType
+        {
+            get
+            {
+                return Type;
             }
         }
 

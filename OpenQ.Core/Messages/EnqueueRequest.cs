@@ -1,4 +1,4 @@
-﻿namespace OpenQ.Core
+﻿namespace OpenQ.Core.Messages
 {
     using System.Collections.Generic;
     using System.Linq;

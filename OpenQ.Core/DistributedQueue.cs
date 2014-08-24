@@ -10,6 +10,8 @@
     using System.Threading;
     using System.Threading.Tasks;
 
+    using OpenQ.Core.Messages;
+
     public sealed class DistributedQueue : IDistributedQueue
     {
         #region Fields

@@ -10,6 +10,7 @@
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     using OpenQ.Core;
+    using OpenQ.Core.Messages;
 
     public sealed class SuccessfulEnqueueToThreePeers
     {

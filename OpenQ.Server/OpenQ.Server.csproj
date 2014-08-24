@@ -71,6 +71,7 @@
     <Compile Include="ICommandLineJob.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="QueueController.cs" />
     <Compile Include="RunServerJob.cs" />
     <Compile Include="Startup.cs" />
   </ItemGroup>

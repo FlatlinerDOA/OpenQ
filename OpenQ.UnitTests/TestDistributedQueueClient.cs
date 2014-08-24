@@ -8,6 +8,7 @@ namespace OpenQ.UnitTests
     using System.Threading.Tasks;
 
     using OpenQ.Core;
+    using OpenQ.Core.Messages;
 
     public sealed class TestDistributedQueueClient : IDistributedQueue
     {

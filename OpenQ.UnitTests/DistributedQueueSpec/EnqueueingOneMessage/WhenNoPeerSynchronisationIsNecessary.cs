@@ -8,6 +8,7 @@
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     using OpenQ.Core;
+    using OpenQ.Core.Messages;
 
     [TestClass]
     public sealed class WhenNoPeerSynchronisationIsNecessary : GivenZeroPeers

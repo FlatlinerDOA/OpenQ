@@ -6,6 +6,7 @@
     using Microsoft.Reactive.Testing;
 
     using OpenQ.Core;
+    using OpenQ.Core.Messages;
 
     public abstract class EnqueueingSpecification : SpecificationBase
     {
