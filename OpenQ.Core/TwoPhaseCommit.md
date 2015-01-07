@@ -8,7 +8,7 @@ This assumes the sender has already read from this or another peer's copy of the
 
 Using this strategy has some major pitfalls:
 
-1. The number of messages that are required to achieve consensus approaches 4n ^ 2 + 4 where n is the number of nodes in a quorum.
+1. Using a naive broadcast approach the number of messages that are required to achieve consensus approaches 4n ^ 2 + 4 where n is the number of nodes in a quorum. To avoid this a tree structure of nodes must be maintained across all servers. Achieving this and maintaining it in the case of failures could become very complicated.
 2. The system requires some kind of built in timeout in each and every node to handle failure of peers.
 3. In the case recovering from a failure a Presume Abort or Presume Commit strategy is unavoidable and would require coordination with peers to get close to being correct.
 
