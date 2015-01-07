@@ -1,5 +1,5 @@
 ﻿# Two-Phase Commit Strategy
-With a Two-phase commit strategy the Distributed Queue writes are performed in two stages, the Enqueue and Commit phase.
+I'm proposing using a Dynamic two-phase commit strategy (see http://en.wikipedia.org/wiki/Two-phase_commit_protocol#Tree_two-phase_commit_protocol ). With the following Two-phase commit strategy the Distributed Queue writes are performed in two stages, the Enqueue and Commit phase.
 
 The first phase Enqueues the value with an expected sequence number that the sender assumes the queue is at. 
 This assumes the sender has already read from this or another peer's copy of the queue.
