@@ -40,7 +40,6 @@ With the Pub-Sub quorum strategy all writes are presumed uncommitted until suffi
            <-- Return v' (x' uncommitted) --                                                 |
                                                    <-- x' Stored @2 --                       |
                                                                                              | Store v2*
-                                                                                             |
            <--- Accepted x' (1,2) ----------                                                 |
            ------------ Get x' ------------>                                                 |
            <---- Return x' -----------------                                                 |

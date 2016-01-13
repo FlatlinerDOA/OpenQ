@@ -7,6 +7,7 @@ This assumes the sender has already read from this or another peer's copy of the
 # Design Notes
 
 Using this strategy has some major pitfalls:
+
 1. The number of messages that are required to achieve consensus approaches 4n ^ 2 + 4 where n is the number of nodes in a quorum.
 2. The system requires some kind of built in timeout in each and every node to handle failure of peers.
 3. In the case recovering from a failure a Presume Abort or Presume Commit strategy is unavoidable and would require coordination with peers to get close to being correct.
@@ -70,6 +71,7 @@ Using this strategy has some major pitfalls:
 ### Peer #1's Accept Process:
 
 EnqueueAsync(values, cursor? = null)
+
 1. Check is online -> Throw exception if not ready
 2. If cursor is null use Peer #1's current cursor for the queue
    Else check if the cursor is equal to Peer #1's current cursor in the queue
@@ -97,6 +99,7 @@ EnqueueAsync(values, cursor? = null)
 ### Peer #2's Accept Process:
 
 UpdateCursor(cursor)
+
 1. Store cursor position for corresponding peer
 2. Iterate through Quorum peers, count how many other peers have accepted this cursor already.
 3. If count is greater than minimum quorum, then check if new values are stored, if not read values from a random peer in the list of accepted using this peer's current cursor (This will Auto-repair the queue).
