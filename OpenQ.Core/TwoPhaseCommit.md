@@ -1,5 +1,5 @@
 ﻿# Two-Phase Commit Strategy
-With a Two-phase commit strategy the Distributed Queue writes are performed in two stages, the Enqueue and Commit phase.
+I'm proposing using a Dynamic two-phase commit strategy (see http://en.wikipedia.org/wiki/Two-phase_commit_protocol#Tree_two-phase_commit_protocol ). With the following Two-phase commit strategy the Distributed Queue writes are performed in two stages, the Enqueue and Commit phase.
 
 The first phase Enqueues the value with an expected sequence number that the sender assumes the queue is at. 
 This assumes the sender has already read from this or another peer's copy of the queue.
@@ -8,7 +8,7 @@ This assumes the sender has already read from this or another peer's copy of the
 
 Using this strategy has some major pitfalls:
 
-1. The number of messages that are required to achieve consensus approaches 4n ^ 2 + 4 where n is the number of nodes in a quorum.
+1. Using a naive broadcast approach the number of messages that are required to achieve consensus approaches 4n ^ 2 + 4 where n is the number of nodes in a quorum. To avoid this a tree structure of nodes must be maintained across all servers. Achieving this and maintaining it in the case of failures could become very complicated.
 2. The system requires some kind of built in timeout in each and every node to handle failure of peers.
 3. In the case recovering from a failure a Presume Abort or Presume Commit strategy is unavoidable and would require coordination with peers to get close to being correct.
 
@@ -86,6 +86,7 @@ EnqueueAsync(values, cursor? = null)
 9. Respond to client with this Peer's updated cursor indicating success.
 
 #### Possible Crash Points and Their Impact:
+
 1. A crash at this point will either result in client receiving a http error or a timeout, No state change has been made, client is free to retry
 2. No state change, client is free to retry
 3. Prior to storage -> No state change
@@ -105,6 +106,7 @@ UpdateCursor(cursor)
 3. If count is greater than minimum quorum, then check if new values are stored, if not read values from a random peer in the list of accepted using this peer's current cursor (This will Auto-repair the queue).
 
 ### New Peer #4 Startup:
+
 1. Load current cursor and list of Peers and their Cursors.
 2. Contact a random Peer x and ReadQueueAsync(currentCursor, 0)
 3. this.UpdateCursor(Peer x's Cursor).

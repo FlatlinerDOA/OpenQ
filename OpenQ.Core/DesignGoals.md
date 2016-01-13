@@ -10,7 +10,8 @@
 6. Support for either strong or weak ordering constraints on a per message basis as decided by the client.
  - By enqueing each message with an explicit expected sequence number the write will either pass or fail immediately if that sequence number is taken. 
  - Alternatively enqueuing with a zero sequence number provides a slightly better guarantee of data being stored during peak load periods as the node will try and re-order the queue on behalf of the client in the case of a sequence conflict without the client having to resend the messages.
-
+7. Pluggable storage engine, potentially configurable by topic, allows for flexible choices based on environment, performance needs and recovery requirements etc.
+  - Some ideas for storage engines include SQL Server, PostgresQL, Esent, a Custom Memory Mapped storage engine, immutable in memory dictionaries.
 
 ### Potential Uses
 - Event Store for an Event Sourced CQRS style system
